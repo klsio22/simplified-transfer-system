@@ -12,7 +12,7 @@ GET {{baseUrl}}/balance/1
 ###
 
 ### Balance - Get saldo usuário 4
-GET {{baseUrl}}/balance/4
+GET {{baseUrl}}/balance/1
 
 ###
 
@@ -26,9 +26,9 @@ POST {{baseUrl}}/transfer
 Content-Type: {{contentType}}
 
 {
-  "value": 100.00,
+  "value": 10.00,
   "payer": 1,
-  "payee": 4
+  "payee": 3
 }
 
 ###

@@ -21,7 +21,7 @@ class NotifyService
 
     /**
      * Envia notificação ao usuário recebedor (payee)
-     * 
+     *
      * Executa de forma assíncrona para não bloquear a transferência
      * Em produção, isso deveria usar uma fila real (Redis, RabbitMQ, etc)
      */

@@ -1,0 +1,96 @@
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### Health Check - GET /
+GET {{baseUrl}}/
+
+###
+
+### Transfer - Sucesso com usuários válidos
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": 100.00,
+  "payer": 1,
+  "payee": 4
+}
+
+###
+
+### Transfer - Falha - Valor negativo
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": -50.00,
+  "payer": 1,
+  "payee": 2
+}
+
+###
+
+### Transfer - Falha - Campo obrigatório ausente
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "payer": 1,
+  "payee": 2
+}
+
+###
+
+### Transfer - Falha - Payload vazio
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{}
+
+###
+
+### Transfer - Falha - Saldo insuficiente
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": 10000.00,
+  "payer": 1,
+  "payee": 4
+}
+
+###
+
+### Transfer - Falha - Tentativa de transferência para si mesmo
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": 50.00,
+  "payer": 1,
+  "payee": 1
+}
+
+###
+
+### Transfer - Falha - Shopkeeper tentando enviar (não permitido)
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": 50.00,
+  "payer": 4,
+  "payee": 1
+}
+
+###
+
+### Transfer - Falha - Usuário não encontrado
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": 50.00,
+  "payer": 999,
+  "payee": 1
+}

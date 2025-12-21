@@ -1,0 +1,150 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Integration;
+
+use PHPUnit\Framework\TestCase;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
+
+/**
+ * Testes de integração do endpoint /transfer
+ * 
+ * NOTA: Requer ambiente rodando (docker-compose up)
+ */
+class TransferApiTest extends TestCase
+{
+    private Client $client;
+    private string $baseUrl = 'http://localhost:8080';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->client = new Client([
+            'base_uri' => $this->baseUrl,
+            'http_errors' => false, // Não lança exceção em 4xx/5xx
+            'headers' => [
+                'Content-Type' => 'application/json',
+            ],
+        ]);
+    }
+
+    /**
+     * @group integration
+     * @group skip
+     * Teste básico - transferência válida
+     */
+    public function testSuccessfulTransfer(): void
+    {
+        $response = $this->client->post('/transfer', [
+            'json' => [
+                'value' => 10.00,
+                'payer' => 1,
+                'payee' => 4,
+            ],
+        ]);
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertArrayHasKey('message', $data);
+        $this->assertEquals('Transferência realizada com sucesso', $data['message']);
+    }
+
+    /**
+     * @group integration
+     * @group skip
+     */
+    public function testTransferWithMissingFields(): void
+    {
+        $response = $this->client->post('/transfer', [
+            'json' => [
+                'value' => 10.00,
+                // Faltando payer e payee
+            ],
+        ]);
+
+        $this->assertEquals(400, $response->getStatusCode());
+
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertArrayHasKey('error', $data);
+    }
+
+    /**
+     * @group integration
+     * @group skip
+     */
+    public function testTransferFromShopkeeper(): void
+    {
+        $response = $this->client->post('/transfer', [
+            'json' => [
+                'value' => 10.00,
+                'payer' => 4, // Lojista
+                'payee' => 1,
+            ],
+        ]);
+
+        $this->assertEquals(422, $response->getStatusCode());
+
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertStringContainsString('Lojistas', $data['error']);
+    }
+
+    /**
+     * @group integration
+     * @group skip
+     */
+    public function testTransferWithInsufficientBalance(): void
+    {
+        $response = $this->client->post('/transfer', [
+            'json' => [
+                'value' => 999999.00,
+                'payer' => 1,
+                'payee' => 2,
+            ],
+        ]);
+
+        $this->assertEquals(422, $response->getStatusCode());
+
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertStringContainsString('Saldo insuficiente', $data['error']);
+    }
+
+    /**
+     * @group integration
+     * @group skip
+     */
+    public function testTransferWithInvalidPayload(): void
+    {
+        $response = $this->client->post('/transfer', [
+            'body' => 'invalid json',
+        ]);
+
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    /**
+     * @group integration
+     * @group skip
+     */
+    public function testTransferToSelf(): void
+    {
+        $response = $this->client->post('/transfer', [
+            'json' => [
+                'value' => 10.00,
+                'payer' => 1,
+                'payee' => 1, // Mesmo usuário
+            ],
+        ]);
+
+        $this->assertEquals(422, $response->getStatusCode());
+
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertStringContainsString('si mesmo', $data['error']);
+    }
+}

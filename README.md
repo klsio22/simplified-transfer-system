@@ -14,26 +14,52 @@ Implementada com **Slim Framework 4** — escolha consciente por ser leve, perfo
 
 > 💡 **Projeto desenvolvido seguindo boas práticas de engenharia de software**, clean code, SOLID, design patterns e PSRs.
 
-## Checklist de entrega
+---
 
-- [ ] Endpoint POST /transfer conforme contrato solicitado  
-- [ ] Validação de saldo do pagador antes da transferência  
-- [ ] Bloqueio de transferências enviadas por lojistas  
-- [ ] Consulta ao serviço autorizador externo (mock GET)  
-- [ ] Operação de transferência dentro de transação DB (rollback automático em falha)  
-- [ ] Envio de notificação ao recebedor via serviço externo (mock POST)  
-- [ ] Notificação executada de forma assíncrona (via queue simples com Redis)  
-- [ ] Tipos de usuário: comum (pode enviar) e lojista (só recebe)  
-- [ ] Validação completa de campos e existência de usuários  
-- [ ] Tratamento de erros com respostas JSON padronizadas (400, 422, 500)  
-- [ ] Uso de Docker + docker-compose (PHP 8.2 + Nginx + MySQL + Redis)  
-- [ ] Testes automatizados com PHPUnit (unitários + integração)  
-- [ ] Camadas separadas: Routes → Controllers → Services → Repositories  
-- [ ] Adesão total às PSRs (PSR-12, PSR-4, PSR-7, PSR-11, PSR-15)  
-- [ ] Análise estática com PHPStan nível 8 e PHP-CS-Fixer  
-- [ ] Container DI (PHP-DI) para injeção de dependências  
-- [ ] Documentação completa + instruções claras de execução  
-- [ ] Proposta de melhorias arquiteturais no final  
+## 🚀 Quick Start
+
+```bash
+# 1. Clone e acesse o diretório
+git clone <repo> && cd simplified-transfer-system
+
+# 2. Inicie os containers
+docker-compose up -d
+
+# 3. Aguarde 30s para o MySQL inicializar
+
+# 4. Faça uma transferência de teste
+curl -X POST http://localhost:8080/transfer \
+  -H "Content-Type: application/json" \
+  -d '{"value": 100.00, "payer": 1, "payee": 4}'
+
+# Resposta: {"message":"Transferência realizada com sucesso"}
+```
+
+📖 **Leia o [QUICKSTART.md](QUICKSTART.md) para mais detalhes e exemplos**  
+🏛️ **Veja a [ARCHITECTURE.md](ARCHITECTURE.md) para entender a arquitetura**
+
+---
+
+## ✅ Checklist de entrega
+
+- [x] Endpoint POST /transfer conforme contrato solicitado  
+- [x] Validação de saldo do pagador antes da transferência  
+- [x] Bloqueio de transferências enviadas por lojistas  
+- [x] Consulta ao serviço autorizador externo (mock GET)  
+- [x] Operação de transferência dentro de transação DB (rollback automático em falha)  
+- [x] Envio de notificação ao recebedor via serviço externo (mock POST)  
+- [x] Notificação executada de forma assíncrona (fire-and-forget)  
+- [x] Tipos de usuário: comum (pode enviar) e lojista (só recebe)  
+- [x] Validação completa de campos e existência de usuários  
+- [x] Tratamento de erros com respostas JSON padronizadas (400, 422, 500)  
+- [x] Uso de Docker + docker-compose (PHP 8.2 + Nginx + MySQL + Redis)  
+- [x] Testes automatizados com PHPUnit (unitários + integração)  
+- [x] Camadas separadas: Routes → Controllers → Services → Repositories  
+- [x] Adesão total às PSRs (PSR-12, PSR-4, PSR-7, PSR-11, PSR-15)  
+- [x] Análise estática com PHPStan nível 8 e PHP-CS-Fixer  
+- [x] Container DI (PHP-DI) para injeção de dependências  
+- [x] Documentação completa + instruções claras de execução  
+- [x] Proposta de melhorias arquiteturais no final (ver ARCHITECTURE.md)  
 
 ## 🛠️ Stack Tecnológica
 

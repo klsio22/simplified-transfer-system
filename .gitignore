@@ -1,0 +1,38 @@
+# Dependências
+/vendor/
+/node_modules/
+
+# Ambiente
+.env
+.env.local
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testes
+/coverage/
+/.phpunit.cache/
+.phpunit.result.cache
+
+# Logs
+*.log
+/logs/
+
+# Cache
+/.php-cs-fixer.cache
+/cache/
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
+
+# Composer
+composer.lock
+
+# Build
+/build/
+/dist/

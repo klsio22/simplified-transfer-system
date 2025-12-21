@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         failOnWarning="true"
+         failOnRisky="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutChangesToGlobalState="true"
+         cacheDirectory=".phpunit.cache">
+    <testsuites>
+        <testsuite name="Unit Tests">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Integration Tests">
+            <directory>tests/Integration</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory>src</directory>
+        </include>
+    </source>
+
+    <coverage>
+        <report>
+            <html outputDirectory="coverage"/>
+            <text outputFile="php://stdout"/>
+        </report>
+    </coverage>
+
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="DB_HOST" value="localhost"/>
+        <env name="DB_NAME" value="simplified_transfer_test"/>
+        <env name="DB_USER" value="root"/>
+        <env name="DB_PASS" value=""/>
+    </php>
+</phpunit>

@@ -36,11 +36,11 @@ class TransferService
         $payee = $this->userRepo->find($payeeId);
 
         if (!$payer) {
-            throw new Exception('Pagador não encontrado', 404);
+            throw new Exception('Payer not found', 404);
         }
 
         if (!$payee) {
-            throw new Exception('Recebedor não encontrado', 404);
+            throw new Exception('Payee not found', 404);
         }
 
         // 3. Validações de regras de negócio
@@ -48,7 +48,7 @@ class TransferService
 
         // 4. Consulta serviço autorizador externo
         if (!$this->authorizeService->isAuthorized()) {
-            throw new Exception('Transação não autorizada pelo serviço autorizador', 422);
+            throw new Exception('Transaction not authorized by authorization service', 422);
         }
 
         // 5. Executa transferência dentro de transação
@@ -58,8 +58,8 @@ class TransferService
         try {
             $this->notifyService->notify($payeeId);
         } catch (Exception $e) {
-            // Notificação falhou, mas transferência foi concluída
-            error_log("Falha ao notificar usuário {$payeeId}: " . $e->getMessage());
+            // Notification failed, but transfer completed
+            error_log("Failed to notify user {$payeeId}: " . $e->getMessage());
         }
     }
 
@@ -69,11 +69,11 @@ class TransferService
     private function validateTransferData(int $payerId, int $payeeId, float $value): void
     {
         if ($value <= 0) {
-            throw new Exception('O valor da transferência deve ser maior que zero', 422);
+            throw new Exception('Transfer value must be greater than zero', 422);
         }
 
         if ($payerId === $payeeId) {
-            throw new Exception('Não é possível transferir para si mesmo', 422);
+            throw new Exception('Cannot transfer to yourself', 422);
         }
     }
 
@@ -82,14 +82,14 @@ class TransferService
      */
     private function validateBusinessRules(User $payer, float $value): void
     {
-        // Lojistas não podem enviar transferências
+        // Shopkeepers cannot send transfers
         if ($payer->isShopkeeper()) {
-            throw new Exception('Lojistas não podem realizar transferências', 422);
+            throw new Exception('Shopkeepers cannot perform transfers', 422);
         }
 
         // Verifica saldo suficiente
         if (!$payer->hasSufficientBalance($value)) {
-            throw new Exception('Saldo insuficiente', 422);
+            throw new Exception('Insufficient balance', 422);
         }
     }
 
@@ -114,8 +114,8 @@ class TransferService
             $pdo->commit();
         } catch (PDOException $e) {
             $pdo->rollBack();
-            error_log("Erro na transação de transferência: " . $e->getMessage());
-            throw new Exception('Falha ao processar transferência. Tente novamente.', 500);
+            error_log("Error during transfer transaction: " . $e->getMessage());
+            throw new Exception('Failed to process transfer. Please try again.', 500);
         }
     }
 }

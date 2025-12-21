@@ -6,6 +6,21 @@ GET {{baseUrl}}/
 
 ###
 
+### Balance - Get saldo usuário 1
+GET {{baseUrl}}/balance/1
+
+###
+
+### Balance - Get saldo usuário 4
+GET {{baseUrl}}/balance/4
+
+###
+
+### Balance - Falha - Usuário não encontrado
+GET {{baseUrl}}/balance/999
+
+###
+
 ### Transfer - Sucesso com usuários válidos
 POST {{baseUrl}}/transfer
 Content-Type: {{contentType}}

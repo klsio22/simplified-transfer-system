@@ -35,17 +35,17 @@ class AuthorizeService
                 return true;
             }
 
-            // Verifica formato alternativo com 'message'
-            if (isset($data['message']) && $data['message'] === 'Autorizado') {
+            // Check alternative message formats (Portuguese or English)
+            if (isset($data['message']) && ($data['message'] === 'Autorizado' || $data['message'] === 'Authorized')) {
                 return true;
             }
 
             return false;
         } catch (GuzzleException $e) {
-            // Log do erro (em produção usar logger real)
-            error_log("Erro ao consultar serviço autorizador: " . $e->getMessage());
+            // Log error (use real logger in production)
+            error_log("Error querying authorization service: " . $e->getMessage());
             
-            // Em caso de erro, nega a autorização por segurança
+            // In case of error, deny authorization for safety
             return false;
         }
     }

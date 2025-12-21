@@ -33,10 +33,10 @@ class NotifyService
                 'json' => ['user_id' => $payeeId],
             ])->wait(false); // false = não espera completar
         } catch (GuzzleException $e) {
-            // Log silencioso - serviço instável não deve quebrar a transferência
-            error_log("Erro ao enviar notificação para usuário {$payeeId}: " . $e->getMessage());
+            // Silent log - unstable notification service should not break transfer
+            error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());
             
-            // Em produção: registrar em fila de retry ou dead letter
+            // In production: enqueue for retry or dead letter
         }
     }
 
@@ -54,7 +54,7 @@ class NotifyService
             
             return isset($data['message']) && $data['message'] === 'Success';
         } catch (GuzzleException $e) {
-            error_log("Erro ao enviar notificação para usuário {$payeeId}: " . $e->getMessage());
+            error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());
             return false;
         }
     }

@@ -37,4 +37,20 @@ class User
     {
         return $this->balance >= $amount;
     }
+
+    // Getters para uso em controllers e respostas
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getFullName(): string
+    {
+        return $this->full_name;
+    }
+
+    public function getBalance(): float
+    {
+        return $this->balance;
+    }
 }

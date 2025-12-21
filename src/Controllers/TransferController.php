@@ -45,7 +45,7 @@ class TransferController
             );
 
             return $this->jsonResponse($response, [
-                'message' => 'Transferência realizada com sucesso',
+                'message' => 'Transfer completed successfully',
             ], 200);
         } catch (Exception $e) {
             // Determina status code baseado no código da exceção
@@ -63,7 +63,7 @@ class TransferController
     private function validatePayload(?array $data): ?array
     {
         if ($data === null) {
-            return ['error' => 'Payload inválido ou vazio'];
+            return ['error' => 'Invalid or empty payload'];
         }
 
         $requiredFields = ['value', 'payer', 'payee'];
@@ -77,22 +77,22 @@ class TransferController
 
         if (!empty($missingFields)) {
             return [
-                'error' => 'Campos obrigatórios ausentes',
+                'error' => 'Missing required fields',
                 'missing_fields' => $missingFields,
             ];
         }
 
         // Validações adicionais
         if (!is_numeric($data['value']) || $data['value'] <= 0) {
-            return ['error' => 'O campo "value" deve ser um número maior que zero'];
+            return ['error' => 'The "value" field must be a number greater than zero'];
         }
 
         if (!is_numeric($data['payer']) || $data['payer'] <= 0) {
-            return ['error' => 'O campo "payer" deve ser um ID válido'];
+            return ['error' => 'The "payer" field must be a valid ID'];
         }
 
         if (!is_numeric($data['payee']) || $data['payee'] <= 0) {
-            return ['error' => 'O campo "payee" deve ser um ID válido'];
+            return ['error' => 'The "payee" field must be a valid ID'];
         }
 
         return null;

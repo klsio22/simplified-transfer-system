@@ -40,7 +40,7 @@ class TransferServiceTest extends TestCase
     public function testTransferWithShopkeeperAsPayerShouldFail(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Lojistas não podem realizar transferências');
+        $this->expectExceptionMessage('Shopkeepers cannot perform transfers');
         $this->expectExceptionCode(422);
 
         $payer = $this->createShopkeeper(1, 100.0);
@@ -59,7 +59,7 @@ class TransferServiceTest extends TestCase
     public function testTransferWithInsufficientBalanceShouldFail(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Saldo insuficiente');
+        $this->expectExceptionMessage('Insufficient balance');
         $this->expectExceptionCode(422);
 
         $payer = $this->createCommonUser(1, 30.0);
@@ -78,7 +78,7 @@ class TransferServiceTest extends TestCase
     public function testTransferWithZeroValueShouldFail(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('O valor da transferência deve ser maior que zero');
+        $this->expectExceptionMessage('Transfer value must be greater than zero');
         $this->expectExceptionCode(422);
 
         $this->transferService->transfer(1, 2, 0.0);
@@ -87,7 +87,7 @@ class TransferServiceTest extends TestCase
     public function testTransferWithNegativeValueShouldFail(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('O valor da transferência deve ser maior que zero');
+        $this->expectExceptionMessage('Transfer value must be greater than zero');
         $this->expectExceptionCode(422);
 
         $this->transferService->transfer(1, 2, -10.0);
@@ -96,7 +96,7 @@ class TransferServiceTest extends TestCase
     public function testTransferToSelfShouldFail(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Não é possível transferir para si mesmo');
+        $this->expectExceptionMessage('Cannot transfer to yourself');
         $this->expectExceptionCode(422);
 
         $this->transferService->transfer(1, 1, 50.0);
@@ -105,7 +105,7 @@ class TransferServiceTest extends TestCase
     public function testTransferWithNonExistentPayerShouldFail(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Pagador não encontrado');
+        $this->expectExceptionMessage('Payer not found');
         $this->expectExceptionCode(404);
 
         $this->userRepository
@@ -118,7 +118,7 @@ class TransferServiceTest extends TestCase
     public function testTransferWithNonExistentPayeeShouldFail(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Recebedor não encontrado');
+        $this->expectExceptionMessage('Payee not found');
         $this->expectExceptionCode(404);
 
         $payer = $this->createCommonUser(1, 100.0);

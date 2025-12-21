@@ -50,7 +50,7 @@ class TransferApiTest extends TestCase
 
         $data = json_decode((string) $response->getBody(), true);
         $this->assertArrayHasKey('message', $data);
-        $this->assertEquals('Transferência realizada com sucesso', $data['message']);
+        $this->assertEquals('Transfer completed successfully', $data['message']);
     }
 
     /**
@@ -90,7 +90,7 @@ class TransferApiTest extends TestCase
 
         $data = json_decode((string) $response->getBody(), true);
         $this->assertArrayHasKey('error', $data);
-        $this->assertStringContainsString('Lojistas', $data['error']);
+        $this->assertStringContainsString('Shopkeepers', $data['error']);
     }
 
     /**
@@ -111,7 +111,7 @@ class TransferApiTest extends TestCase
 
         $data = json_decode((string) $response->getBody(), true);
         $this->assertArrayHasKey('error', $data);
-        $this->assertStringContainsString('Saldo insuficiente', $data['error']);
+        $this->assertStringContainsString('Insufficient balance', $data['error']);
     }
 
     /**
@@ -145,6 +145,6 @@ class TransferApiTest extends TestCase
 
         $data = json_decode((string) $response->getBody(), true);
         $this->assertArrayHasKey('error', $data);
-        $this->assertStringContainsString('si mesmo', $data['error']);
+        $this->assertStringContainsString('yourself', $data['error']);
     }
 }

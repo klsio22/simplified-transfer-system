@@ -11,8 +11,7 @@ class WalletRepository
 {
     public function __construct(
         private PDO $pdo
-    ) {
-    }
+    ) {}
 
     public function findByUserId(int $userId): ?Wallet
     {

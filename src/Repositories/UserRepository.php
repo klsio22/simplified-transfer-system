@@ -12,8 +12,7 @@ class UserRepository
 {
     public function __construct(
         private PDO $pdo
-    ) {
-    }
+    ) {}
 
     public function findById(int $id): ?User
     {
@@ -57,7 +56,7 @@ class UserRepository
     public function create(User $user): User
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO users (full_name, cpf_cnpj, email, password, type, created_at, updated_at) 
+            'INSERT INTO users (full_name, cpf_cnpj, email, password, type, created_at, updated_at)
              VALUES (:full_name, :cpf_cnpj, :email, :password, :type, NOW(), NOW())'
         );
 

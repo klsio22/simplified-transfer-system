@@ -30,7 +30,7 @@ class TransactionRepository
     public function create(Transaction $transaction): Transaction
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO transactions (payer_id, payee_id, amount, status, created_at, updated_at) 
+            'INSERT INTO transactions (payer_id, payee_id, amount, status, created_at, updated_at)
              VALUES (:payer_id, :payee_id, :amount, :status, NOW(), NOW())'
         );
 

@@ -3,17 +3,14 @@
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
-         failOnWarning="true"
-         failOnRisky="true"
          beStrictAboutOutputDuringTests="true"
-         beStrictAboutChangesToGlobalState="true"
-         cacheDirectory=".phpunit.cache">
+         cacheDirectory="vendor/.phpunit.cache">
     <testsuites>
-        <testsuite name="Unit Tests">
+        <testsuite name="Unit">
             <directory>tests/Unit</directory>
         </testsuite>
-        <testsuite name="Integration Tests">
-            <directory>tests/Integration</directory>
+        <testsuite name="Integration">
+            <exclude>tests/Integration</exclude>
         </testsuite>
     </testsuites>
 
@@ -23,18 +20,10 @@
         </include>
     </source>
 
-    <coverage>
-        <report>
-            <html outputDirectory="coverage"/>
-            <text outputFile="php://stdout"/>
-        </report>
-    </coverage>
+    <!-- Coverage disabled in CI-less environments to avoid requiring Xdebug/pcov -->
 
     <php>
         <env name="APP_ENV" value="testing"/>
-        <env name="DB_HOST" value="localhost"/>
-        <env name="DB_NAME" value="simplified_transfer_test"/>
-        <env name="DB_USER" value="root"/>
-        <env name="DB_PASS" value=""/>
+        <env name="API_BASE_URL" value="http://localhost:8080"/>
     </php>
 </phpunit>

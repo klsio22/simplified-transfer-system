@@ -36,6 +36,17 @@ function test {
     docker compose exec app ./vendor/bin/phpunit --colors=always "${TEST_PATH}"
 }
 
+function test:unit {
+    docker compose exec app ./vendor/bin/phpunit --colors=always tests/Unit
+}
+
+function test:integration {
+    echo "⚠️  Integration tests require API running!"
+    echo "Start with: ./run up"
+    echo ""
+    docker compose exec app ./vendor/bin/phpunit --colors=always tests/Integration
+}
+
 function phpstan {
     docker compose exec app ./vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=512M
 }

@@ -16,9 +16,13 @@ use PDO;
 class TransferServiceTest extends TestCase
 {
     private TransferService $transferService;
+    /** @var UserRepository&\PHPUnit\Framework\MockObject\MockObject */
     private UserRepository $userRepository;
+    /** @var AuthorizeService&\PHPUnit\Framework\MockObject\MockObject */
     private AuthorizeService $authorizeService;
+    /** @var NotifyService&\PHPUnit\Framework\MockObject\MockObject */
     private NotifyService $notifyService;
+    /** @var PDO&\PHPUnit\Framework\MockObject\MockObject */
     private PDO $pdo;
 
     protected function setUp(): void

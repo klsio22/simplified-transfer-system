@@ -32,7 +32,7 @@ function composer {
 }
 
 function test {
-    TEST_PATH="${@:-tests}"
+    TEST_PATH="${@:-tests/Unit}"
     docker compose exec app ./vendor/bin/phpunit --colors=always "${TEST_PATH}"
 }
 
@@ -84,7 +84,7 @@ function help {
   composer [cmd]      - Executar comandos do composer
 
 🧪 Testes e Qualidade
-  test [path]         - Rodar testes PHPUnit (padrão: tests)
+    test [path]         - Rodar testes PHPUnit (padrão: tests/Unit)
   phpstan             - Análise estática com PHPStan (level 8)
   cs-fix              - Corrigir formatação (PHP-CS-Fixer)
   cs-check            - Verificar formatação sem alterar
@@ -100,7 +100,7 @@ function help {
 
 Exemplos:
   ./run up -d         # Iniciar containers em background
-  ./run test          # Rodar todos os testes
+    ./run test          # Rodar testes unitários por padrão
   ./run test tests/Unit/UserTest.php  # Rodar teste específico
   ./run phpstan       # Análise estática
   ./run logs nginx    # Ver logs do Nginx

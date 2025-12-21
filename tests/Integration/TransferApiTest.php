@@ -16,15 +16,28 @@ use GuzzleHttp\Exception\GuzzleException;
 class TransferApiTest extends TestCase
 {
     private Client $client;
-    private string $baseUrl = 'http://localhost:8080';
+    private string $baseUrl;
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        // Determine base URL:
+        // - explicit env `API_BASE_URL` (phpunit.xml or runtime)
+        // - if running inside Docker container, reach nginx by service name
+        // - otherwise default to localhost:8080
+        $envBase = getenv('API_BASE_URL') ?: null;
+        if ($envBase !== null && $envBase !== '') {
+            $this->baseUrl = $envBase;
+        } elseif (file_exists('/.dockerenv')) {
+            $this->baseUrl = 'http://nginx:80';
+        } else {
+            $this->baseUrl = 'http://localhost:8080';
+        }
+
         $this->client = new Client([
             'base_uri' => $this->baseUrl,
-            'http_errors' => false, // Não lança exceção em 4xx/5xx
+            'http_errors' => false, // Do not throw on 4xx/5xx
             'headers' => [
                 'Content-Type' => 'application/json',
             ],

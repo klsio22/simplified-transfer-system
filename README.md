@@ -147,6 +147,15 @@ curl -X POST http://localhost:8080/transfer \
 ### 📊 Dados de teste
 
 O seed cria automaticamente:
+Para rodar rapidamente os testes e popular os dados de exemplo, use os comandos abaixo:
+
+```bash
+docker compose exec app php bin/crud-test.php        # teste CRUD (create/read/update)
+docker compose exec app php bin/integration-test.php # teste de integração / DI
+docker compose exec app php bin/db-reset.php         # reset + seed de dados de teste
+```
+
+O seed cria automaticamente:
 
 | ID | Nome              | Tipo     | CPF/CNPJ         | Email               | Saldo     |
 |----|-------------------|----------|------------------|---------------------|-----------|

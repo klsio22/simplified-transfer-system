@@ -104,6 +104,11 @@ class UserRepository
     /**
      * Hidrata um objeto User a partir dos dados do banco
      */
+    /**
+     * Hidrata um objeto User a partir dos dados do banco
+     *
+     * @param array<string,mixed> $data
+     */
     private function hydrate(array $data): User
     {
         $user = new User();

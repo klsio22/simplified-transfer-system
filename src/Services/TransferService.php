@@ -15,7 +15,8 @@ class TransferService
         private UserRepository $userRepo,
         private AuthorizeService $authorizeService,
         private NotifyService $notifyService
-    ) {}
+    ) {
+    }
 
     /**
      * Realiza transferência entre usuários

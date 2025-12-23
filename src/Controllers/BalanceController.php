@@ -10,10 +10,14 @@ use App\Repositories\UserRepository;
 
 class BalanceController
 {
-    public function __construct(private UserRepository $userRepository) {}
+    public function __construct(private UserRepository $userRepository)
+    {
+    }
 
     /**
      * GET /balance/{id}
+     *
+     * @param array<string,mixed> $args
      */
     public function show(Request $request, Response $response, array $args): Response
     {
@@ -21,7 +25,7 @@ class BalanceController
 
         if ($id <= 0) {
             $payload = ['error' => 'Invalid ID'];
-            $response->getBody()->write(json_encode($payload));
+            $response->getBody()->write((string) json_encode($payload));
 
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
@@ -30,7 +34,7 @@ class BalanceController
 
         if ($user === null) {
             $payload = ['error' => 'User not found'];
-            $response->getBody()->write(json_encode($payload));
+            $response->getBody()->write((string) json_encode($payload));
 
             return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
         }
@@ -41,7 +45,7 @@ class BalanceController
             'balance' => (float) $user->getBalance(),
         ];
 
-        $response->getBody()->write(json_encode($payload));
+        $response->getBody()->write((string) json_encode($payload));
 
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
     }

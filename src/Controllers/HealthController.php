@@ -21,7 +21,7 @@ class HealthController
             'timestamp' => date('Y-m-d H:i:s'),
         ];
 
-        $response->getBody()->write(json_encode($data));
+        $response->getBody()->write((string) json_encode($data));
 
         return $response
             ->withHeader('Content-Type', 'application/json')

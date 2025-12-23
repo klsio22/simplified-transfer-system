@@ -10,7 +10,7 @@ use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * Testes de integração do endpoint /transfer
- * 
+ *
  * NOTA: Requer ambiente rodando (docker-compose up)
  */
 class TransferApiTest extends TestCase

@@ -20,7 +20,7 @@ class TransferController
 
     /**
      * Endpoint POST /transfer
-     * 
+     *
      * Payload esperado:
      * {
      *   "value": 100.00,
@@ -36,6 +36,15 @@ class TransferController
         $validation = $this->validatePayload($data);
         if ($validation !== null) {
             return $this->jsonResponse($response, $validation, 400);
+        }
+
+        // Ensure $data is an array for offset access
+        if (is_object($data)) {
+            $data = (array) $data;
+        }
+
+        if (!is_array($data)) {
+            return $this->jsonResponse($response, ['error' => 'Invalid payload'], 400);
         }
 
         try {
@@ -70,11 +79,18 @@ class TransferController
 
     /**
      * Valida o payload da requisição
+     *
+     * @param array<string,mixed>|object|null $data
+     * @return array<string,mixed>|null
      */
-    private function validatePayload(?array $data): ?array
+    private function validatePayload(array|object|null $data): ?array
     {
         if ($data === null) {
             return ['error' => 'Invalid or empty payload'];
+        }
+
+        if (is_object($data)) {
+            $data = (array) $data;
         }
 
         $requiredFields = ['value', 'payer', 'payee'];
@@ -115,7 +131,7 @@ class TransferController
     private function getStatusCodeFromException(Exception $e): int
     {
         $code = $e->getCode();
-        
+
         // Se o código já é um status HTTP válido, usa ele
         if ($code >= 400 && $code < 600) {
             return $code;
@@ -128,10 +144,13 @@ class TransferController
     /**
      * Helper para criar respostas JSON
      */
+    /**
+     * @param array<string,mixed> $data
+     */
     private function jsonResponse(Response $response, array $data, int $statusCode): Response
     {
-        $response->getBody()->write(json_encode($data));
-        
+        $response->getBody()->write((string) json_encode($data));
+
         return $response
             ->withHeader('Content-Type', 'application/json')
             ->withStatus($statusCode);

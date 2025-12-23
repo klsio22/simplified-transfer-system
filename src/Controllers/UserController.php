@@ -23,7 +23,7 @@ class UserController
 
         if (!is_array($data)) {
             $payload = ['error' => true, 'message' => 'Dados inválidos'];
-            $response->getBody()->write(json_encode($payload));
+            $response->getBody()->write((string) json_encode($payload));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
@@ -46,7 +46,7 @@ class UserController
         }
 
         if (!empty($errors)) {
-            $response->getBody()->write(json_encode(['error' => true, 'errors' => $errors]));
+            $response->getBody()->write((string) json_encode(['error' => true, 'errors' => $errors]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(422);
         }
 
@@ -56,7 +56,7 @@ class UserController
             if ($this->flash !== null) {
                 $this->flash->addMessage('error', 'CPF already registered');
             }
-            $response->getBody()->write(json_encode($message));
+            $response->getBody()->write((string) json_encode($message));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(422);
         }
 
@@ -65,7 +65,7 @@ class UserController
             if ($this->flash !== null) {
                 $this->flash->addMessage('error', 'Email already registered');
             }
-            $response->getBody()->write(json_encode($message));
+            $response->getBody()->write((string) json_encode($message));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(422);
         }
 
@@ -85,7 +85,7 @@ class UserController
         }
 
         $payload = ['success' => true, 'id' => $id];
-        $response->getBody()->write(json_encode($payload));
+        $response->getBody()->write((string) json_encode($payload));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
     }
 }

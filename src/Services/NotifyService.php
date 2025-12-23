@@ -35,7 +35,7 @@ class NotifyService
         } catch (GuzzleException $e) {
             // Silent log - unstable notification service should not break transfer
             error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());
-            
+
             // In production: enqueue for retry or dead letter
         }
     }
@@ -51,7 +51,7 @@ class NotifyService
             ]);
 
             $data = json_decode((string) $response->getBody(), true);
-            
+
             return isset($data['message']) && $data['message'] === 'Success';
         } catch (GuzzleException $e) {
             error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());

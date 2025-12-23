@@ -13,7 +13,8 @@ use DateTimeImmutable;
 class Transfer
 {
     #[Column(type: 'primary')]
-    private int $id;
+    /** @var int */
+    private int $id = 0;
 
     #[Column(type: 'int')]
     private int $payerId;
@@ -28,9 +29,11 @@ class Transfer
     private string $status = 'pending';
 
     #[Column(type: 'timestamp', nullable: true)]
+    /** @phpstan-ignore-next-line */
     private ?DateTimeImmutable $createdAt = null;
 
     #[Column(type: 'timestamp', nullable: true)]
+    /** @phpstan-ignore-next-line */
     private ?DateTimeImmutable $updatedAt = null;
 
     // Relations

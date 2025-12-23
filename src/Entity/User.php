@@ -13,7 +13,8 @@ use DateTimeImmutable;
 class User
 {
     #[Column(type: 'primary')]
-    private int $id;
+    /** @var int */
+    private int $id = 0;
 
     #[Column(type: 'string(255)')]
     private string $fullName;
@@ -37,14 +38,33 @@ class User
     private ?DateTimeImmutable $createdAt = null;
 
     #[Column(type: 'timestamp', nullable: true)]
+    /** @phpstan-ignore-next-line */
     private ?DateTimeImmutable $updatedAt = null;
 
     // Relations
+    /** @var array<int, \App\Entity\Transfer> */
     #[HasMany(target: Transfer::class, outerKey: 'payerId')]
     private array $payedTransfers = [];
 
+    /** @var array<int, \App\Entity\Transfer> */
     #[HasMany(target: Transfer::class, outerKey: 'payeeId')]
     private array $receivedTransfers = [];
+
+    /**
+     * @return array<int, \App\Entity\Transfer>
+     */
+    public function getPayedTransfers(): array
+    {
+        return $this->payedTransfers;
+    }
+
+    /**
+     * @return array<int, \App\Entity\Transfer>
+     */
+    public function getReceivedTransfers(): array
+    {
+        return $this->receivedTransfers;
+    }
 
     // ============================================
     // Getters

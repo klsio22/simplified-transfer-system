@@ -67,19 +67,15 @@ function redis {
     docker compose exec redis redis-cli
 }
 
-
-function db:reset {
-    echo "🔄 Resetting database..."
-    docker compose exec app php bin/reset-db.php
-    if [ $? -eq 0 ]; then
-        echo "✅ Database reset complete!"
-    else
-        echo "❌ Database reset failed!"
-        return 1
-    fi
+function db:reset-orm {
+    docker compose exec app php bin/db-reset.php
 }
 
 function db:migrate {
-    docker compose exec app php bin/migrate.php
+   docker compose exec app php bin/integrate.php migrate
+}
+
+function db:crud {
+    docker compose exec app php bin/db-crud.php
 }
 

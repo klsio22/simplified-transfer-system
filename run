@@ -61,7 +61,7 @@ function phpcbf {
 
 function phpstan {
     TEST_PATH="${@:-}"
-    docker compose run --rm php ./vendor/bin/phpstan analyse --memory-limit 1G ${TEST_PATH}
+    ./vendor/bin/phpstan analyse --memory-limit 1G ${TEST_PATH}
 }
 
 function git:clean:branchs {

@@ -49,7 +49,7 @@ class TransferController
 
         try {
             // Executa transferência
-            $this->transferService->transfer(
+            $result = $this->transferService->transfer(
                 (int) $data['payer'],
                 (int) $data['payee'],
                 (float) $data['value']
@@ -60,9 +60,7 @@ class TransferController
                 $this->flash->addMessage('success', 'Transfer completed successfully');
             }
 
-            return $this->jsonResponse($response, [
-                'message' => 'Transfer completed successfully',
-            ], 200);
+            return $this->jsonResponse($response, $result, 200);
         } catch (Exception $e) {
             // Determina status code baseado no código da exceção
             $statusCode = $this->getStatusCodeFromException($e);

@@ -193,3 +193,68 @@ Content-Type: application/json
 
 {}
 
+###
+
+### Notify - Sucesso - Notificação após transfer bem-sucedida (usuário comum)
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": 15.50,
+  "payer": 25,
+  "payee": 24
+}
+
+###
+
+### Notify - Sucesso - Notificação após transfer bem-sucedida (lojista recebe)
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": 25.00,
+  "payer": 25,
+  "payee": 26
+}
+
+###
+
+### Notify - Teste Mock Service Simulando 503 (Indisponível)
+POST https://httpstat.us/503
+Content-Type: application/json
+
+{
+  "user_id": 24
+}
+
+###
+
+### Notify - Teste Mock Service Simulando Timeout
+POST https://httpstat.us/200?sleep=6000
+Content-Type: application/json
+
+{
+  "user_id": 24
+}
+
+###
+
+### Notify - Teste Mock Service com Erro 400
+POST https://util.devi.tools/api/v1/notify
+Content-Type: application/json
+
+{
+  "user_id": "invalid"
+}
+
+###
+
+### Notify - Teste Mock Service com Campo Extra (Robustez)
+POST https://util.devi.tools/api/v1/notify
+Content-Type: application/json
+
+{
+  "user_id": 24,
+  "extra_field": "should_be_ignored"
+}
+

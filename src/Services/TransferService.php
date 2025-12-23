@@ -24,9 +24,10 @@ class TransferService
      * @param int $payerId ID do pagador (quem envia)
      * @param int $payeeId ID do recebedor (quem recebe)
      * @param float $value Valor a ser transferido
+     * @return array<string,mixed> Resultado da transferência com informações de notificação
      * @throws Exception Se a transferência falhar por qualquer motivo
      */
-    public function transfer(int $payerId, int $payeeId, float $value): void
+    public function transfer(int $payerId, int $payeeId, float $value): array
     {
         // 1. Validações básicas
         $this->validateTransferData($payerId, $payeeId, $value);
@@ -55,12 +56,23 @@ class TransferService
         $this->executeTransfer($payer, $payee, $value);
 
         // 6. Notifica recebedor (assíncrono, fora da transação)
+        $notificationSent = false;
         try {
             $this->notifyService->notify($payeeId);
+            $notificationSent = true;
         } catch (Exception $e) {
             // Notification failed, but transfer completed
             error_log("Failed to notify user {$payeeId}: " . $e->getMessage());
         }
+
+        return [
+            'success' => true,
+            'message' => 'Transfer completed successfully',
+            'value' => $value,
+            'payer_id' => $payerId,
+            'payee_id' => $payeeId,
+            'notification_sent' => $notificationSent,
+        ];
     }
 
     /**

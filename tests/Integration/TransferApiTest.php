@@ -47,7 +47,7 @@ class TransferApiTest extends TestCase
     /**
      * @group integration
      * @group skip
-     * Teste básico - transferência válida
+     * Teste básico - transferência válida com notificação
      */
     public function testSuccessfulTransfer(): void
     {
@@ -64,6 +64,8 @@ class TransferApiTest extends TestCase
         $data = json_decode((string) $response->getBody(), true);
         $this->assertArrayHasKey('message', $data);
         $this->assertEquals('Transfer completed successfully', $data['message']);
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('notification_sent', $data);
     }
 
     /**
@@ -160,4 +162,48 @@ class TransferApiTest extends TestCase
         $this->assertArrayHasKey('error', $data);
         $this->assertStringContainsString('yourself', $data['error']);
     }
-}
+
+    /**
+     * @group integration
+     * @group skip
+     * Teste - Notificação enviada com sucesso após transferência
+     */
+    public function testTransferWithSuccessfulNotification(): void
+    {
+        $response = $this->client->post('/transfer', [
+            'json' => [
+                'value' => 15.00,
+                'payer' => 2,
+                'payee' => 3,
+            ],
+        ]);
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertTrue($data['success']);
+        $this->assertTrue($data['notification_sent']);
+    }
+
+    /**
+     * @group integration
+     * @group skip
+     * Teste - Transferência completa mesmo se notificação falhar
+     */
+    public function testTransferCompleteEvenIfNotificationFails(): void
+    {
+        $response = $this->client->post('/transfer', [
+            'json' => [
+                'value' => 20.00,
+                'payer' => 1,
+                'payee' => 2,
+            ],
+        ]);
+
+        // Transfer should succeed regardless of notification status
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('notification_sent', $data);
+    }

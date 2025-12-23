@@ -52,7 +52,6 @@ try {
 
     echo "\n✅ Cycle ORM is fully integrated with Slim DI Container!\n";
     echo "   Ready to use in controllers and services.\n";
-
 } catch (Exception $e) {
     echo "❌ Error: " . $e->getMessage() . "\n";
     echo $e->getTraceAsString() . "\n";

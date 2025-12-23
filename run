@@ -56,8 +56,7 @@ function phpcs {
 
 function phpcbf {
     TEST_PATH="${@:-.}"
-        docker compose run --rm app ./vendor/bin/phpcbf ${TEST_PATH}
-
+        ./vendor/bin/phpcbf ${TEST_PATH}
 }
 
 function phpstan {

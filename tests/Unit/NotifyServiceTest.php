@@ -8,9 +8,7 @@ use App\Services\NotifyService;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -26,12 +24,15 @@ class NotifyServiceTest extends TestCase
         parent::setUp();
 
         $this->mockClient = $this->createMock(Client::class);
-        
-        // Inject mock client via reflection since it's private
+
         $this->notifyService = new NotifyService();
+
         $reflection = new \ReflectionClass(NotifyService::class);
         $property = $reflection->getProperty('client');
-        $property->setAccessible(true);
+
+        // Remove this line completely — it's deprecated and does nothing in PHP 8.1+
+        // $property->setAccessible(true);
+
         $property->setValue($this->notifyService, $this->mockClient);
     }
 
@@ -49,7 +50,7 @@ class NotifyServiceTest extends TestCase
         $this->mockClient->method('post')->willReturn($mockResponse);
 
         $result = $this->notifyService->notifySync(24);
-        
+
         $this->assertTrue($result);
     }
 
@@ -67,7 +68,7 @@ class NotifyServiceTest extends TestCase
         $this->mockClient->method('post')->willReturn($mockResponse);
 
         $result = $this->notifyService->notifySync(24);
-        
+
         $this->assertFalse($result);
     }
 
@@ -83,7 +84,7 @@ class NotifyServiceTest extends TestCase
         $this->mockClient->method('post')->willReturn($mockResponse);
 
         $result = $this->notifyService->notifySync(24);
-        
+
         $this->assertFalse($result);
     }
 
@@ -93,14 +94,14 @@ class NotifyServiceTest extends TestCase
     public function testNotifySyncWithException(): void
     {
         $request = new Request('POST', 'https://util.devi.tools/api/v1/notify');
-        
+
         $this->mockClient->method('post')
             ->willThrowException(
                 new RequestException('Connection failed', $request)
             );
 
         $result = $this->notifyService->notifySync(24);
-        
+
         $this->assertFalse($result);
     }
 
@@ -110,14 +111,14 @@ class NotifyServiceTest extends TestCase
     public function testNotifySyncTimeout(): void
     {
         $request = new Request('POST', 'https://util.devi.tools/api/v1/notify');
-        
+
         $this->mockClient->method('post')
             ->willThrowException(
                 new ConnectException('Connection timeout', $request)
             );
 
         $result = $this->notifyService->notifySync(24);
-        
+
         $this->assertFalse($result);
     }
 
@@ -127,7 +128,7 @@ class NotifyServiceTest extends TestCase
     public function testNotifyAsyncWithException(): void
     {
         $request = new Request('POST', 'https://util.devi.tools/api/v1/notify');
-        
+
         // Mock postAsync that throws
         $mockPromise = $this->createMock(\GuzzleHttp\Promise\PromiseInterface::class);
         $mockPromise->method('wait')
@@ -139,7 +140,7 @@ class NotifyServiceTest extends TestCase
 
         // Should not throw, just log
         $this->notifyService->notify(24);
-        
+
         $this->assertTrue(true); // If we get here, no exception was thrown
     }
 

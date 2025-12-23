@@ -73,7 +73,6 @@ try {
     }
 
     echo "\n✅ All tests passed! Cycle ORM is working correctly!\n";
-
 } catch (Exception $e) {
     echo "❌ Error: " . $e->getMessage() . "\n";
     echo $e->getTraceAsString() . "\n";

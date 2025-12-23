@@ -48,7 +48,10 @@ class EndpointsTest extends TestCase
             $c->set(\App\Controllers\BalanceController::class, function () use ($c) {
                 return new class ($c->get(UserRepository::class)) {
                     private $userRepository;
-                    public function __construct($userRepository) { $this->userRepository = $userRepository; }
+                    public function __construct($userRepository)
+                    {
+                        $this->userRepository = $userRepository;
+                    }
 
                     public function show(\Psr\Http\Message\ServerRequestInterface $request, \Psr\Http\Message\ResponseInterface $response, array $args = [])
                     {
@@ -154,9 +157,12 @@ class EndpointsTest extends TestCase
 
             // stub TransferController for tests
             $c->set(\App\Controllers\TransferController::class, function () use ($c) {
-                return new class($c->get(\App\Services\TransferService::class)) {
+                return new class ($c->get(\App\Services\TransferService::class)) {
                     private $transferService;
-                    public function __construct($transferService) { $this->transferService = $transferService; }
+                    public function __construct($transferService)
+                    {
+                        $this->transferService = $transferService;
+                    }
 
                     public function transfer(\Psr\Http\Message\ServerRequestInterface $request, \Psr\Http\Message\ResponseInterface $response)
                     {

@@ -83,7 +83,6 @@ try {
 
     echo "\n✅ Database reset complete!\n";
     echo "   Created 3 test users\n";
-
 } catch (Exception $e) {
     echo "❌ Error: " . $e->getMessage() . "\n";
     echo $e->getTraceAsString() . "\n";

@@ -67,53 +67,19 @@ function redis {
     docker compose exec redis redis-cli
 }
 
-function help {
-    cat << EOF
-╔════════════════════════════════════════════════════════════════╗
-║       Simplified Transfer System - Available Commands           ║
-╚════════════════════════════════════════════════════════════════╝
 
-🐳 Docker
-  ps                  - Listar status dos containers
-  up [options]        - Iniciar containers (background: -d)
-  down [options]      - Parar containers
-  logs [service]      - Ver logs do serviço (padrão: app)
-  shell               - Acessar bash do container app
-
-📦 Composer
-  composer [cmd]      - Executar comandos do composer
-
-🧪 Testes e Qualidade
-    test [path]         - Rodar testes PHPUnit (padrão: tests/Unit)
-  phpstan             - Análise estática com PHPStan (level 8)
-  cs-fix              - Corrigir formatação (PHP-CS-Fixer)
-  cs-check            - Verificar formatação sem alterar
-
-🗄️  Banco de Dados
-  mysql               - Acessar console MySQL
-
-💾 Cache
-  redis               - Acessar console Redis
-
-❓ Ajuda
-  help                - Exibir este menu
-
-Exemplos:
-  ./run up -d         # Iniciar containers em background
-    ./run test          # Rodar testes unitários por padrão
-  ./run test tests/Unit/UserTest.php  # Rodar teste específico
-  ./run phpstan       # Análise estática
-  ./run logs nginx    # Ver logs do Nginx
-  ./run shell         # Acessar bash do app
-
-EOF
+function db:reset {
+    echo "🔄 Resetting database..."
+    docker compose exec app php bin/reset-db.php
+    if [ $? -eq 0 ]; then
+        echo "✅ Database reset complete!"
+    else
+        echo "❌ Database reset failed!"
+        return 1
+    fi
 }
 
-# Se nenhum argumento, mostrar ajuda
-if [[ $# -eq 0 ]]; then
-    help
-    exit 0
-fi
+function db:migrate {
+    docker compose exec app php bin/migrate.php
+}
 
-TIMEFORMAT=$'\nTask completed in %3lR'
-time ${@}

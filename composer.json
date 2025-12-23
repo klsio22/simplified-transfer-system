@@ -15,6 +15,9 @@
     },
     "require": {
         "php": "^8.2",
+        "cycle/database": "^2.15",
+        "cycle/migrations": "^4.2",
+        "cycle/orm": "^2.12",
         "guzzlehttp/guzzle": "^7.8",
         "php-di/php-di": "^7.0",
         "predis/predis": "^2.2",

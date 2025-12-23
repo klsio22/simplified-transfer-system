@@ -7,12 +7,16 @@ GET {{baseUrl}}/
 ###
 
 ### Balance - Get saldo usuário 1
-GET {{baseUrl}}/balance/1
+GET {{baseUrl}}/balance/24
 
 ###
 
-### Balance - Get saldo usuário 4
-GET {{baseUrl}}/balance/1
+### Balance - Get saldo usuário 2
+GET {{baseUrl}}/balance/25
+
+
+### Balance - Get saldo usuário 3 loja
+GET {{baseUrl}}/balance/26
 
 ###
 
@@ -27,8 +31,8 @@ Content-Type: {{contentType}}
 
 {
   "value": 10.00,
-  "payer": 1,
-  "payee": 3
+  "payer": 25,
+  "payee": 24
 }
 
 ###
@@ -115,7 +119,7 @@ POST {{baseUrl}}/users
 Content-Type: {{contentType}}
 
 {
-  "fullName": "Maria Oliveira",
+  "fullName": "Maria Oliveira fernades",
   "cpf": "22233344455",
   "email": "maria@example.com",
   "password": "senha123",

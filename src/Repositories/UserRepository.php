@@ -77,10 +77,10 @@ class UserRepository
     public function create(User $user): int
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO users (fullName, cpf, email, password, type, balance) 
+            "INSERT INTO users (full_name, cpf, email, password, type, balance) 
              VALUES (?, ?, ?, ?, ?, ?)"
         );
-        
+
         $stmt->execute([
             $user->fullName,
             $user->cpf,

@@ -26,10 +26,6 @@ class AuthorizeService
      */
     public function isAuthorized(): bool
     {
-        // Bypass para desenvolvimento ou testes
-        if (getenv('SKIP_AUTH') === '1' || getenv('APP_ENV') === 'testing') {
-            return true;
-        }
 
         $authorized = false;
 

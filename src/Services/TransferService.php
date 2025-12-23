@@ -15,12 +15,11 @@ class TransferService
         private UserRepository $userRepo,
         private AuthorizeService $authorizeService,
         private NotifyService $notifyService
-    ) {
-    }
+    ) {}
 
     /**
      * Realiza transferência entre usuários
-     * 
+     *
      * @param int $payerId ID do pagador (quem envia)
      * @param int $payeeId ID do recebedor (quem recebe)
      * @param float $value Valor a ser transferido

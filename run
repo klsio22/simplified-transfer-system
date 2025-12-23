@@ -10,7 +10,7 @@ function ps {
 }
 
 function up {
-    docker compose up "${@}"
+    docker compose up -d "${@}"
 }
 
 function down {
@@ -25,11 +25,11 @@ function composer {
 }
 
 function nginx:check {
-    docker compose exec web nginx -t
+    docker compose exec nginx nginx -t
 }
 
 function nginx:status {
-    docker compose exec web service nginx status
+    docker compose exec nginx service nginx status
 }
 
 function nginx:reload {
@@ -42,16 +42,11 @@ function php:console {
 
 function test {
     TEST_PATH="${@:-tests}"
-    docker compose run --rm php_test ./vendor/bin/phpunit --color ${TEST_PATH}
+    docker compose exec app ./vendor/bin/phpunit --colors ${TEST_PATH}
 }
 
 function codecept {
     docker compose run --rm php_test ./vendor/bin/codecept ${@}
-}
-
-function test:browser {
-    TEST_PATH="${@:-tests/Acceptance}"
-    docker compose run --rm php_test ./vendor/bin/codecept run acceptance ${TEST_PATH}
 }
 
 function phpcs {

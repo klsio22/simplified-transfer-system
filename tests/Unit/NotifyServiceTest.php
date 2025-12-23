@@ -11,6 +11,7 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 
@@ -42,7 +43,7 @@ class NotifyServiceTest extends TestCase
         // Mock successful response
         $mockResponse = $this->createMock(ResponseInterface::class);
         $mockResponse->method('getBody')->willReturn(
-            json_encode(['message' => 'Success'])
+            Utils::streamFor(json_encode(['message' => 'Success']))
         );
 
         $this->mockClient->method('post')->willReturn($mockResponse);
@@ -60,7 +61,7 @@ class NotifyServiceTest extends TestCase
         // Mock failed response
         $mockResponse = $this->createMock(ResponseInterface::class);
         $mockResponse->method('getBody')->willReturn(
-            json_encode(['message' => 'Failed'])
+            Utils::streamFor(json_encode(['message' => 'Failed']))
         );
 
         $this->mockClient->method('post')->willReturn($mockResponse);
@@ -77,7 +78,7 @@ class NotifyServiceTest extends TestCase
     {
         // Mock empty response
         $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('getBody')->willReturn(json_encode([]));
+        $mockResponse->method('getBody')->willReturn(Utils::streamFor(json_encode([])));
 
         $this->mockClient->method('post')->willReturn($mockResponse);
 
@@ -148,9 +149,7 @@ class NotifyServiceTest extends TestCase
     public function testNotifyWithDifferentUserIds(): void
     {
         $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('getBody')->willReturn(
-            json_encode(['message' => 'Success'])
-        );
+        $mockResponse->method('getBody')->willReturn(Utils::streamFor(json_encode(['message' => 'Success'])));
 
         $this->mockClient->method('post')->willReturn($mockResponse);
 
@@ -169,9 +168,7 @@ class NotifyServiceTest extends TestCase
     public function testNotifyPayloadStructure(): void
     {
         $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('getBody')->willReturn(
-            json_encode(['message' => 'Success'])
-        );
+        $mockResponse->method('getBody')->willReturn(Utils::streamFor(json_encode(['message' => 'Success'])));
 
         // Capture the call arguments
         $this->mockClient->expects($this->once())

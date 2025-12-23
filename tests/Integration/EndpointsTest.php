@@ -33,7 +33,7 @@ class EndpointsTest extends TestCase
             // stub HealthController for tests
             $c->set(\App\Controllers\HealthController::class, function () {
                 return new class {
-                    public function hello(\Psr\Http\Message\ResponseInterface $response)
+                    public function hello(\Psr\Http\Message\ServerRequestInterface $request, \Psr\Http\Message\ResponseInterface $response)
                     {
                         $data = ['message' => 'Hello, World!'];
                         $response->getBody()->write((string) json_encode($data));
@@ -46,10 +46,11 @@ class EndpointsTest extends TestCase
 
             // stub BalanceController for tests
             $c->set(\App\Controllers\BalanceController::class, function () use ($c) {
-                return new class($c->get(UserRepository::class)) {
-                    public function __construct(private UserRepository $userRepository) {}
+                return new class ($c->get(UserRepository::class)) {
+                    private $userRepository;
+                    public function __construct($userRepository) { $this->userRepository = $userRepository; }
 
-                    public function show(\Psr\Http\Message\ResponseInterface $response, array $args = [])
+                    public function show(\Psr\Http\Message\ServerRequestInterface $request, \Psr\Http\Message\ResponseInterface $response, array $args = [])
                     {
                         $id = (int) ($args['id'] ?? 0);
 
@@ -154,14 +155,15 @@ class EndpointsTest extends TestCase
             // stub TransferController for tests
             $c->set(\App\Controllers\TransferController::class, function () use ($c) {
                 return new class($c->get(\App\Services\TransferService::class)) {
-                    public function __construct(private \App\Services\TransferService $transferService) {}
+                    private $transferService;
+                    public function __construct($transferService) { $this->transferService = $transferService; }
 
                     public function transfer(\Psr\Http\Message\ServerRequestInterface $request, \Psr\Http\Message\ResponseInterface $response)
                     {
                         $data = $request->getParsedBody();
 
                         if ($data === null || (is_object($data) && (array)$data === []) || (is_array($data) && $data === [])) {
-                            return $this->jsonResponse($response, ['error' => 'Invalid or empty payload'], 400);
+                            return $this->jsonResponse($response, ['error' => 'Invalid or empty payload'], 422);
                         }
 
                         if (is_object($data)) {

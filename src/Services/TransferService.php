@@ -6,8 +6,13 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Repositories\UserRepository;
+use App\Core\TransferException;
+use App\Core\UserNotFoundException;
+use App\Core\InvalidTransferException;
+use App\Core\BusinessRuleException;
+use App\Core\UnauthorizedException;
+use App\Core\TransferProcessingException;
 use PDOException;
-use Exception;
 
 class TransferService
 {
@@ -15,7 +20,8 @@ class TransferService
         private UserRepository $userRepo,
         private AuthorizeService $authorizeService,
         private NotifyService $notifyService
-    ) {}
+    ) {
+    }
 
     /**
      * Realiza transferência entre usuários
@@ -24,7 +30,7 @@ class TransferService
      * @param int $payeeId ID do recebedor (quem recebe)
      * @param float $value Valor a ser transferido
      * @return array<string,mixed> Resultado da transferência com informações de notificação
-     * @throws Exception Se a transferência falhar por qualquer motivo
+     * @throws TransferException Se a transferência falhar por qualquer motivo
      */
     public function transfer(int $payerId, int $payeeId, float $value): array
     {
@@ -36,11 +42,11 @@ class TransferService
         $payee = $this->userRepo->find($payeeId);
 
         if (!$payer) {
-            throw new Exception('Payer not found', 404);
+            throw new UserNotFoundException('Payer not found');
         }
 
         if (!$payee) {
-            throw new Exception('Payee not found', 404);
+            throw new UserNotFoundException('Payee not found');
         }
 
         // 3. Validações de regras de negócio
@@ -48,7 +54,7 @@ class TransferService
 
         // 4. Consulta serviço autorizador externo
         if (!$this->authorizeService->isAuthorized()) {
-            throw new Exception('Transaction not authorized by authorization service', 422);
+            throw new UnauthorizedException('Transaction not authorized by authorization service');
         }
 
         // 5. Executa transferência dentro de transação
@@ -59,7 +65,7 @@ class TransferService
         try {
             $this->notifyService->notify($payeeId);
             $notificationSent = true;
-        } catch (Exception $e) {
+        } catch (TransferException $e) {
             // Notification failed, but transfer completed
             error_log("Failed to notify user {$payeeId}: " . $e->getMessage());
         }
@@ -80,11 +86,11 @@ class TransferService
     private function validateTransferData(int $payerId, int $payeeId, float $value): void
     {
         if ($value <= 0) {
-            throw new Exception('Transfer value must be greater than zero', 422);
+            throw new InvalidTransferException('Transfer value must be greater than zero');
         }
 
         if ($payerId === $payeeId) {
-            throw new Exception('Cannot transfer to yourself', 422);
+            throw new InvalidTransferException('Cannot transfer to yourself');
         }
     }
 
@@ -95,12 +101,12 @@ class TransferService
     {
         // Shopkeepers cannot send transfers
         if ($payer->isShopkeeper()) {
-            throw new Exception('Shopkeepers cannot perform transfers', 422);
+            throw new BusinessRuleException('Shopkeepers cannot perform transfers');
         }
 
         // Verifica saldo suficiente
         if (!$payer->hasSufficientBalance($value)) {
-            throw new Exception('Insufficient balance', 422);
+            throw new BusinessRuleException('Insufficient balance');
         }
     }
 
@@ -126,7 +132,7 @@ class TransferService
         } catch (PDOException $e) {
             $pdo->rollBack();
             error_log("Error during transfer transaction: " . $e->getMessage());
-            throw new Exception('Failed to process transfer. Please try again.', 500);
+            throw new TransferProcessingException('Failed to process transfer. Please try again.');
         }
     }
 }

@@ -7,6 +7,7 @@ namespace App\Controllers;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use App\Services\TransferService;
+use App\Core\AppException;
 use Slim\Flash\Messages as FlashMessages;
 use Exception;
 
@@ -163,6 +164,12 @@ class TransferController
      */
     private function getStatusCodeFromException(Exception $e): int
     {
+        // Se é uma AppException, usa o método customizado
+        if ($e instanceof AppException) {
+            return $e->getStatusCode();
+        }
+
+        // Fallback: tenta usar o código da exception
         $code = $e->getCode();
 
         // Se o código já é um status HTTP válido, usa ele

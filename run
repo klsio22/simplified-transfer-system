@@ -51,7 +51,7 @@ function codecept {
 
 function phpcs {
     TEST_PATH="${@:-.}"
-     ./vendor/bin/phpcs src tests
+    ./vendor/bin/phpcs --standard=.phpcs.xml src tests
 }
 
 function phpcbf {

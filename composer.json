@@ -4,6 +4,7 @@
     "type": "project",
     "license": "MIT",
     "autoload": {
+        "classmap": ["src/Core/Exceptions.php"],
         "psr-4": {
             "App\\": "src/"
         }

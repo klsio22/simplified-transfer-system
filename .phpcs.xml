@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="Transfer System">
+    <description>PHP Code Sniffer configuration for Transfer System</description>
+
+    <!-- Files to analyze -->
+    <file>src</file>
+    <file>tests</file>
+
+    <!-- Exclude vendor, config, and Exceptions.php (contains multiple classes) -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>src/Core/Exceptions.php</exclude-pattern>
+
+    <!-- Use PSR-12 as base standard -->
+    <rule ref="PSR12"/>
+
+    <!-- Line length limit -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="120"/>
+        </properties>
+    </rule>
+</ruleset>

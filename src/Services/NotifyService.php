@@ -9,6 +9,8 @@ use GuzzleHttp\Exception\GuzzleException;
 
 class NotifyService
 {
+    public const ENDPOINT = 'https://util.devi.tools/api/v1/notify';
+
     private Client $client;
 
     public function __construct()
@@ -29,7 +31,7 @@ class NotifyService
     {
         try {
             // Fire-and-forget: não espera resposta e não bloqueia
-            $this->client->postAsync('https://util.devi.tools/api/v1/notify', [
+            $this->client->postAsync(self::ENDPOINT, [
                 'json' => ['user_id' => $payeeId],
             ])->wait(false); // false = não espera completar
         } catch (GuzzleException $e) {
@@ -46,7 +48,7 @@ class NotifyService
     public function notifySync(int $payeeId): bool
     {
         try {
-            $response = $this->client->post('https://util.devi.tools/api/v1/notify', [
+            $response = $this->client->post(self::ENDPOINT, [
                 'json' => ['user_id' => $payeeId],
             ]);
 

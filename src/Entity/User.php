@@ -8,6 +8,7 @@ use Cycle\Annotated\Annotation\Entity;
 use Cycle\Annotated\Annotation\Column;
 use Cycle\Annotated\Annotation\Relation\HasMany;
 use DateTimeImmutable;
+use App\Entity\Transfer;
 
 #[Entity(table: 'users')]
 class User
@@ -42,16 +43,16 @@ class User
     private ?DateTimeImmutable $updatedAt = null;
 
     // Relations
-    /** @var array<int, \App\Entity\Transfer> */
+    /** @var array<int, Transfer> */
     #[HasMany(target: Transfer::class, outerKey: 'payerId')]
     private array $payedTransfers = [];
 
-    /** @var array<int, \App\Entity\Transfer> */
+    /** @var array<int, Transfer> */
     #[HasMany(target: Transfer::class, outerKey: 'payeeId')]
     private array $receivedTransfers = [];
 
     /**
-     * @return array<int, \App\Entity\Transfer>
+     * @return array<int, Transfer>
      */
     public function getPayedTransfers(): array
     {
@@ -59,7 +60,7 @@ class User
     }
 
     /**
-     * @return array<int, \App\Entity\Transfer>
+     * @return array<int, Transfer>
      */
     public function getReceivedTransfers(): array
     {

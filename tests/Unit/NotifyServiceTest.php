@@ -93,7 +93,7 @@ class NotifyServiceTest extends TestCase
      */
     public function testNotifySyncWithException(): void
     {
-        $request = new Request('POST', 'https://util.devi.tools/api/v1/notify');
+        $request = new Request('POST', NotifyService::ENDPOINT);
 
         $this->mockClient->method('post')
             ->willThrowException(
@@ -110,7 +110,7 @@ class NotifyServiceTest extends TestCase
      */
     public function testNotifySyncTimeout(): void
     {
-        $request = new Request('POST', 'https://util.devi.tools/api/v1/notify');
+        $request = new Request('POST', NotifyService::ENDPOINT);
 
         $this->mockClient->method('post')
             ->willThrowException(
@@ -127,7 +127,7 @@ class NotifyServiceTest extends TestCase
      */
     public function testNotifyAsyncWithException(): void
     {
-        $request = new Request('POST', 'https://util.devi.tools/api/v1/notify');
+        $request = new Request('POST', NotifyService::ENDPOINT);
 
         // Mock postAsync that throws
         $mockPromise = $this->createMock(\GuzzleHttp\Promise\PromiseInterface::class);
@@ -175,7 +175,7 @@ class NotifyServiceTest extends TestCase
         $this->mockClient->expects($this->once())
             ->method('post')
             ->with(
-                'https://util.devi.tools/api/v1/notify',
+                NotifyService::ENDPOINT,
                 $this->callback(function ($options) {
                     return isset($options['json']['user_id']) && $options['json']['user_id'] === 24;
                 })

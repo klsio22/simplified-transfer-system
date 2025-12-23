@@ -6,7 +6,6 @@ namespace Tests\Integration;
 
 use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * Testes de integração do endpoint /transfer
@@ -46,7 +45,6 @@ class TransferApiTest extends TestCase
 
     /**
      * @group integration
-     * @group skip
      * Teste básico - transferência válida com notificação
      */
     public function testSuccessfulTransfer(): void
@@ -70,7 +68,6 @@ class TransferApiTest extends TestCase
 
     /**
      * @group integration
-     * @group skip
      */
     public function testTransferWithMissingFields(): void
     {
@@ -89,7 +86,6 @@ class TransferApiTest extends TestCase
 
     /**
      * @group integration
-     * @group skip
      */
     public function testTransferFromShopkeeper(): void
     {
@@ -110,7 +106,6 @@ class TransferApiTest extends TestCase
 
     /**
      * @group integration
-     * @group skip
      */
     public function testTransferWithInsufficientBalance(): void
     {
@@ -131,7 +126,6 @@ class TransferApiTest extends TestCase
 
     /**
      * @group integration
-     * @group skip
      */
     public function testTransferWithInvalidPayload(): void
     {
@@ -144,7 +138,6 @@ class TransferApiTest extends TestCase
 
     /**
      * @group integration
-     * @group skip
      */
     public function testTransferToSelf(): void
     {
@@ -165,7 +158,6 @@ class TransferApiTest extends TestCase
 
     /**
      * @group integration
-     * @group skip
      * Teste - Notificação enviada com sucesso após transferência
      */
     public function testTransferWithSuccessfulNotification(): void
@@ -187,7 +179,6 @@ class TransferApiTest extends TestCase
 
     /**
      * @group integration
-     * @group skip
      * Teste - Transferência completa mesmo se notificação falhar
      */
     public function testTransferCompleteEvenIfNotificationFails(): void
@@ -207,3 +198,4 @@ class TransferApiTest extends TestCase
         $this->assertTrue($data['success']);
         $this->assertArrayHasKey('notification_sent', $data);
     }
+}

@@ -1,35 +1,35 @@
-FROM php:8.2-fpm
+FROM php:8.2-fpm-alpine
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Instala dependências do sistema
+RUN apk add --no-cache \
+    bash \
     git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
     zip \
     unzip \
-    libzip-dev \
-    && docker-php-ext-install pdo_mysql mbstring zip pcntl bcmath
+    curl \
+    nginx \
+    supervisor
 
-# Install Redis extension
-RUN pecl install redis && docker-php-ext-enable redis
+# Instala extensões PHP necessárias
+RUN docker-php-ext-install pdo pdo_mysql
 
-# Get Composer
+# Instala Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
-WORKDIR /var/www
+# Define diretório de trabalho
+WORKDIR /var/www/html
 
-# Copy application files
+# Copia arquivos do projeto
 COPY . .
 
-# Install dependencies
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader || true
+# Instala dependências do Composer
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www
+# Define permissões
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
 
+# Expõe porta do PHP-FPM
 EXPOSE 9000
 
 CMD ["php-fpm"]

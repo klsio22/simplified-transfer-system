@@ -4,89 +4,123 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Entities\User;
-use App\Enums\UserType;
+use App\Models\User;
 use PDO;
 
 class UserRepository
 {
     public function __construct(
         private PDO $pdo
-    ) {}
-
-    public function findById(int $id): ?User
-    {
-        $stmt = $this->pdo->prepare('SELECT * FROM users WHERE id = :id');
-        $stmt->execute(['id' => $id]);
-        $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$data) {
-            return null;
-        }
-
-        return $this->hydrate($data);
-    }
-
-    public function findByEmail(string $email): ?User
-    {
-        $stmt = $this->pdo->prepare('SELECT * FROM users WHERE email = :email');
-        $stmt->execute(['email' => $email]);
-        $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$data) {
-            return null;
-        }
-
-        return $this->hydrate($data);
-    }
-
-    public function findByCpfCnpj(string $cpfCnpj): ?User
-    {
-        $stmt = $this->pdo->prepare('SELECT * FROM users WHERE cpf_cnpj = :cpf_cnpj');
-        $stmt->execute(['cpf_cnpj' => $cpfCnpj]);
-        $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$data) {
-            return null;
-        }
-
-        return $this->hydrate($data);
-    }
-
-    public function create(User $user): User
-    {
-        $stmt = $this->pdo->prepare(
-            'INSERT INTO users (full_name, cpf_cnpj, email, password, type, created_at, updated_at)
-             VALUES (:full_name, :cpf_cnpj, :email, :password, :type, NOW(), NOW())'
-        );
-
-        $stmt->execute([
-            'full_name' => $user->getFullName(),
-            'cpf_cnpj' => $user->getCpfCnpj(),
-            'email' => $user->getEmail(),
-            'password' => $user->getPassword(),
-            'type' => $user->getType()->value,
-        ]);
-
-        $user->setId((int) $this->pdo->lastInsertId());
-
-        return $user;
+    ) {
     }
 
     /**
-     * @param array<string, mixed> $data
+     * Busca um usuário pelo ID
+     */
+    public function find(int $id): ?User
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        $data = $stmt->fetch();
+
+        if (!$data) {
+            return null;
+        }
+
+        return $this->hydrate($data);
+    }
+
+    /**
+     * Busca um usuário pelo email
+     */
+    public function findByEmail(string $email): ?User
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $data = $stmt->fetch();
+
+        if (!$data) {
+            return null;
+        }
+
+        return $this->hydrate($data);
+    }
+
+    /**
+     * Busca um usuário pelo CPF
+     */
+    public function findByCpf(string $cpf): ?User
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE cpf = ?");
+        $stmt->execute([$cpf]);
+        $data = $stmt->fetch();
+
+        if (!$data) {
+            return null;
+        }
+
+        return $this->hydrate($data);
+    }
+
+    /**
+     * Atualiza o saldo de um usuário
+     */
+    public function updateBalance(User $user): void
+    {
+        $stmt = $this->pdo->prepare("UPDATE users SET balance = ? WHERE id = ?");
+        $stmt->execute([$user->balance, $user->id]);
+    }
+
+    /**
+     * Cria um novo usuário
+     */
+    public function create(User $user): int
+    {
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO users (full_name, cpf, email, password, type, balance) 
+             VALUES (?, ?, ?, ?, ?, ?)"
+        );
+
+        $stmt->execute([
+            $user->fullName,
+            $user->cpf,
+            $user->email,
+            $user->password,
+            $user->type,
+            $user->balance,
+        ]);
+
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    /**
+     * Retorna o PDO para transações
+     */
+    public function getPdo(): PDO
+    {
+        return $this->pdo;
+    }
+
+    /**
+     * Hidrata um objeto User a partir dos dados do banco
+     */
+    /**
+     * Hidrata um objeto User a partir dos dados do banco
+     *
+     * @param array<string,mixed> $data
      */
     private function hydrate(array $data): User
     {
-        return new User(
-            id: (int) $data['id'],
-            fullName: $data['full_name'],
-            cpfCnpj: $data['cpf_cnpj'],
-            email: $data['email'],
-            password: $data['password'],
-            type: UserType::from($data['type']),
-            createdAt: $data['created_at'],
-            updatedAt: $data['updated_at']
-        );
+        $user = new User();
+        $user->id = (int) $data['id'];
+        // Support both 'fullName' and 'full_name' column naming
+        $user->fullName = (string) ($data['fullName'] ?? $data['full_name'] ?? '');
+        $user->cpf = $data['cpf'];
+        $user->email = $data['email'];
+        $user->password = $data['password'];
+        $user->type = $data['type'];
+        $user->balance = (float) $data['balance'];
+
+        return $user;
     }
 }

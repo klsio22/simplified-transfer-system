@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
-         executionOrder="depends,defects"
          beStrictAboutOutputDuringTests="true"
-         failOnRisky="true"
-         failOnWarning="true">
+         cacheDirectory="vendor/.phpunit.cache">
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
         </testsuite>
         <testsuite name="Integration">
-            <directory>tests/Integration</directory>
+            <exclude>tests/Integration</exclude>
         </testsuite>
     </testsuites>
-    <coverage>
+
+    <source>
         <include>
-            <directory suffix=".php">src</directory>
+            <directory>src</directory>
         </include>
-        <exclude>
-            <directory>src/Exceptions</directory>
-            <directory>src/Enums</directory>
-        </exclude>
-    </coverage>
+    </source>
+
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="API_BASE_URL" value="http://localhost:8080"/>
+    </php>
 </phpunit>

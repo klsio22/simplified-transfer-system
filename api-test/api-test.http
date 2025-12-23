@@ -1,0 +1,172 @@
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### Health Check - GET /
+GET {{baseUrl}}/
+
+###
+
+### Balance - Get saldo usuário 1
+GET {{baseUrl}}/balance/24
+
+###
+
+### Balance - Get saldo usuário 2
+GET {{baseUrl}}/balance/25
+
+
+### Balance - Get saldo usuário 3 loja
+GET {{baseUrl}}/balance/26
+
+###
+
+### Balance - Falha - Usuário não encontrado
+GET {{baseUrl}}/balance/999
+
+###
+
+### Transfer - Sucesso com usuários válidos
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": 10.00,
+  "payer": 25,
+  "payee": 24
+}
+
+###
+
+### Transfer - Falha - Valor negativo
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": -50.00,
+  "payer": 1,
+  "payee": 2
+}
+
+###
+
+### Transfer - Falha - Campo obrigatório ausente
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "payer": 1,
+  "payee": 2
+}
+
+###
+
+### Transfer - Falha - Payload vazio
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{}
+
+###
+
+### Transfer - Falha - Saldo insuficiente
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": 10000.00,
+  "payer": 1,
+  "payee": 4
+}
+
+###
+
+### Transfer - Falha - Tentativa de transferência para si mesmo
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": 50.00,
+  "payer": 1,
+  "payee": 1
+}
+
+###
+
+### Transfer - Falha - Shopkeeper tentando enviar (não permitido)
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": 50.00,
+  "payer": 4,
+  "payee": 1
+}
+
+###
+
+### Transfer - Falha - Usuário não encontrado
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": 50.00,
+  "payer": 999,
+  "payee": 1
+}
+
+### Users - Criação - Sucesso
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "fullName": "Maria Oliveira fernades",
+  "cpf": "22233344455",
+  "email": "maria@example.com",
+  "password": "senha123",
+  "type": "common"
+}
+
+### Users - Criação - Falha CPF duplicado
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "fullName": "Outra Pessoa",
+  "cpf": "22233344455",
+  "email": "outra@example.com",
+  "password": "senha123",
+  "type": "common"
+}
+
+### Users - Criação - Falha Email duplicado
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "fullName": "Pessoa 2",
+  "cpf": "33344455566",
+  "email": "maria@example.com",
+  "password": "senha123",
+  "type": "common"
+}
+
+### Users - Criação - Falha Email inválido
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "fullName": "Invalido Email",
+  "cpf": "44455566677",
+  "email": "not-an-email",
+  "password": "senha123",
+  "type": "common"
+}
+
+### Users - Criação - Falha Campos ausentes
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "fullName": "Sem Campos",
+  "cpf": "55566677788"
+}

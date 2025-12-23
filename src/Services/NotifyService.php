@@ -6,72 +6,56 @@ namespace App\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Predis\Client as Redis;
 
 class NotifyService
 {
-    private string $notifyUrl;
+    private Client $client;
 
-    public function __construct(
-        private Client $httpClient,
-        private ?Redis $redis = null
-    ) {
-        $this->notifyUrl = $_ENV['NOTIFY_URL'] ?? 'https://util.devi.tools/api/v1/notify';
-    }
-
-    /**
-     * Enfileira notificação para envio assíncrono
-     *
-     * @param array<string, mixed> $payload
-     */
-    public function enqueue(array $payload): void
+    public function __construct()
     {
-        if ($this->redis) {
-            $this->redis->rpush('notifications', [json_encode($payload)]);
-        } else {
-            // Fallback: envia sincronamente se Redis não estiver disponível
-            $this->send($payload);
-        }
+        $this->client = new Client([
+            'timeout' => 5,
+            'connect_timeout' => 3,
+        ]);
     }
 
     /**
-     * Envia notificação diretamente (síncrono)
+     * Envia notificação ao usuário recebedor (payee)
      *
-     * @param array<string, mixed> $payload
+     * Executa de forma assíncrona para não bloquear a transferência
+     * Em produção, isso deveria usar uma fila real (Redis, RabbitMQ, etc)
      */
-    public function send(array $payload): bool
+    public function notify(int $payeeId): void
     {
         try {
-            $response = $this->httpClient->post($this->notifyUrl, [
-                'json' => $payload,
-                'timeout' => 5,
-                'connect_timeout' => 3,
-            ]);
-
-            return $response->getStatusCode() >= 200 && $response->getStatusCode() < 300;
+            // Fire-and-forget: não espera resposta e não bloqueia
+            $this->client->postAsync('https://util.devi.tools/api/v1/notify', [
+                'json' => ['user_id' => $payeeId],
+            ])->wait(false); // false = não espera completar
         } catch (GuzzleException $e) {
-            // Log do erro, mas não interrompe o fluxo
-            error_log('Falha ao enviar notificação: ' . $e->getMessage());
-            return false;
+            // Silent log - unstable notification service should not break transfer
+            error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());
+
+            // In production: enqueue for retry or dead letter
         }
     }
 
     /**
-     * Processa notificações da fila (usado pelo worker)
+     * Versão síncrona para testes
      */
-    public function processQueue(): void
+    public function notifySync(int $payeeId): bool
     {
-        if (!$this->redis) {
-            return;
-        }
+        try {
+            $response = $this->client->post('https://util.devi.tools/api/v1/notify', [
+                'json' => ['user_id' => $payeeId],
+            ]);
 
-        while (true) {
-            $item = $this->redis->blpop(['notifications'], 5);
+            $data = json_decode((string) $response->getBody(), true);
 
-            if ($item) {
-                $payload = json_decode($item[1], true);
-                $this->send($payload);
-            }
+            return isset($data['message']) && $data['message'] === 'Success';
+        } catch (GuzzleException $e) {
+            error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());
+            return false;
         }
     }
 }

@@ -2,63 +2,66 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit;
+namespace Tests\Unit\Models;
 
-use App\Entities\User;
-use App\Enums\UserType;
+use App\Models\User;
 use PHPUnit\Framework\TestCase;
 
 class UserTest extends TestCase
 {
-    public function testCommonUserCanSendTransfer(): void
+    public function testIsShopkeeperReturnsTrueForShopkeeper(): void
     {
-        $user = new User(
-            id: 1,
-            fullName: 'João Silva',
-            cpfCnpj: '12345678901',
-            email: 'joao@example.com',
-            password: 'hashed',
-            type: UserType::COMMON
-        );
+        $user = new User();
+        $user->type = 'shopkeeper';
 
-        $this->assertTrue($user->canSendTransfer());
+        $this->assertTrue($user->isShopkeeper());
+    }
+
+    public function testIsShopkeeperReturnsFalseForCommonUser(): void
+    {
+        $user = new User();
+        $user->type = 'common';
+
+        $this->assertFalse($user->isShopkeeper());
+    }
+
+    public function testIsCommonReturnsTrueForCommonUser(): void
+    {
+        $user = new User();
+        $user->type = 'common';
+
         $this->assertTrue($user->isCommon());
-        $this->assertFalse($user->isMerchant());
     }
 
-    public function testMerchantCannotSendTransfer(): void
+    public function testIsCommonReturnsFalseForShopkeeper(): void
     {
-        $user = new User(
-            id: 2,
-            fullName: 'Loja do João',
-            cpfCnpj: '12345678000199',
-            email: 'loja@example.com',
-            password: 'hashed',
-            type: UserType::MERCHANT
-        );
+        $user = new User();
+        $user->type = 'shopkeeper';
 
-        $this->assertFalse($user->canSendTransfer());
         $this->assertFalse($user->isCommon());
-        $this->assertTrue($user->isMerchant());
     }
 
-    public function testUserToArray(): void
+    public function testHasSufficientBalanceReturnsTrueWhenBalanceIsEnough(): void
     {
-        $user = new User(
-            id: 1,
-            fullName: 'João Silva',
-            cpfCnpj: '12345678901',
-            email: 'joao@example.com',
-            password: 'hashed',
-            type: UserType::COMMON
-        );
+        $user = new User();
+        $user->balance = 100.0;
 
-        $array = $user->toArray();
+        $this->assertTrue($user->hasSufficientBalance(50.0));
+    }
 
-        $this->assertArrayHasKey('id', $array);
-        $this->assertArrayHasKey('full_name', $array);
-        $this->assertArrayHasKey('email', $array);
-        $this->assertArrayHasKey('type', $array);
-        $this->assertEquals('common', $array['type']);
+    public function testHasSufficientBalanceReturnsTrueWhenBalanceIsExact(): void
+    {
+        $user = new User();
+        $user->balance = 100.0;
+
+        $this->assertTrue($user->hasSufficientBalance(100.0));
+    }
+
+    public function testHasSufficientBalanceReturnsFalseWhenBalanceIsInsufficient(): void
+    {
+        $user = new User();
+        $user->balance = 50.0;
+
+        $this->assertFalse($user->hasSufficientBalance(100.0));
     }
 }

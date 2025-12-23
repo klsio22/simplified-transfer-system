@@ -1,85 +1,93 @@
-.PHONY: help start stop restart logs test phpstan cs-fix cs-check migrate worker shell reset health
+.PHONY: help up down build restart logs test phpstan cs-fix shell mysql
 
-help: ## Mostra esta ajuda
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+# Cores para output
+GREEN  := \033[0;32m
+YELLOW := \033[0;33m
+NC     := \033[0m # No Color
 
-start: ## Inicia a aplicação
-	@echo "🚀 Iniciando aplicação..."
-	@cp -n .env.example .env 2>/dev/null || true
-	@docker-compose up -d --build
-	@echo "⏳ Aguardando containers ficarem prontos..."
-	@sleep 30
-	@docker-compose exec app composer install
-	@docker-compose exec app php bin/migrate.php
-	@echo "✅ Aplicação rodando em http://localhost:8080"
+help: ## Mostra esta mensagem de ajuda
+	@echo "$(GREEN)Simplified Transfer System - Comandos disponíveis:$(NC)"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(YELLOW)%-15s$(NC) %s\n", $$1, $$2}'
 
-stop: ## Para os containers
-	@echo "🛑 Parando containers..."
-	@docker-compose down
-	@echo "✅ Containers parados"
+up: ## Inicia os containers
+	@echo "$(GREEN)🚀 Iniciando containers...$(NC)"
+	docker-compose up -d
+	@echo "$(GREEN)✅ Containers iniciados! Aguarde 30s para o MySQL inicializar.$(NC)"
+	@echo "$(YELLOW)📍 API disponível em: http://localhost:8080/transfer$(NC)"
+
+down: ## Para os containers
+	@echo "$(YELLOW)🛑 Parando containers...$(NC)"
+	docker-compose down
+	@echo "$(GREEN)✅ Containers parados!$(NC)"
+
+build: ## Rebuild dos containers
+	@echo "$(GREEN)🔨 Fazendo rebuild dos containers...$(NC)"
+	docker-compose down -v
+	docker-compose build --no-cache
+	docker-compose up -d
+	@echo "$(GREEN)✅ Rebuild concluído!$(NC)"
 
 restart: ## Reinicia os containers
-	@echo "🔄 Reiniciando aplicação..."
-	@docker-compose restart
-	@echo "✅ Aplicação reiniciada"
+	@echo "$(YELLOW)🔄 Reiniciando containers...$(NC)"
+	docker-compose restart
+	@echo "$(GREEN)✅ Containers reiniciados!$(NC)"
 
-logs: ## Mostra logs (use: make logs SVC=app)
-	@docker-compose logs -f $(SVC)
+logs: ## Mostra logs da aplicação
+	docker-compose logs -f app
 
-test: ## Roda os testes
-	@echo "🧪 Rodando testes..."
-	@docker-compose exec app composer test
+logs-all: ## Mostra logs de todos os serviços
+	docker-compose logs -f
 
-phpstan: ## Roda análise estática
-	@echo "🔍 Rodando PHPStan..."
-	@docker-compose exec app composer phpstan
+test: ## Executa os testes
+	@echo "$(GREEN)🧪 Executando testes...$(NC)"
+	docker exec -it transfer-app composer test
 
-cs-fix: ## Corrige formatação do código
-	@echo "🎨 Corrigindo formatação..."
-	@docker-compose exec app composer cs-fixer
+test-coverage: ## Executa testes com coverage
+	@echo "$(GREEN)📊 Executando testes com cobertura...$(NC)"
+	docker exec -it transfer-app composer test:coverage
 
-cs-check: ## Verifica formatação do código
-	@echo "🔍 Verificando formatação..."
-	@docker-compose exec app composer cs-check
+phpstan: ## Executa análise estática PHPStan
+	@echo "$(GREEN)🔍 Executando PHPStan...$(NC)"
+	docker exec -it transfer-app composer phpstan
 
-migrate: ## Roda migrations e seed
-	@echo "📊 Rodando migrations..."
-	@docker-compose exec app php bin/migrate.php
+cs-fix: ## Corrige code style
+	@echo "$(GREEN)✨ Corrigindo code style...$(NC)"
+	docker exec -it transfer-app composer cs-fixer
 
-worker: ## Inicia worker de notificações
-	@echo "👷 Iniciando worker..."
-	@docker-compose exec -d app php bin/worker.php
-	@echo "✅ Worker iniciado"
+cs-check: ## Verifica code style
+	@echo "$(GREEN)🔍 Verificando code style...$(NC)"
+	docker exec -it transfer-app composer cs-check
 
-shell: ## Abre shell no container
-	@docker-compose exec app bash
+shell: ## Acessa shell do container da aplicação
+	@echo "$(GREEN)🐚 Acessando shell do container...$(NC)"
+	docker exec -it transfer-app sh
 
-reset: ## Reset completo (CUIDADO: apaga dados!)
-	@echo "⚠️  ATENÇÃO: Isso vai remover TODOS os dados!"
-	@read -p "Tem certeza? [y/N] " -n 1 -r; \
-	echo; \
-	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
-		docker-compose down -v; \
-		docker-compose up -d --build; \
-		sleep 30; \
-		docker-compose exec app composer install; \
-		docker-compose exec app php bin/migrate.php; \
-		echo "✅ Reset completo concluído"; \
-	fi
+mysql: ## Acessa MySQL CLI
+	@echo "$(GREEN)🐬 Acessando MySQL...$(NC)"
+	docker exec -it transfer-mysql mysql -u transfer_user -ptransfer_pass simplified_transfer
 
-health: ## Verifica saúde da aplicação
-	@echo "🔍 Verificando saúde da aplicação..."
-	@echo ""
-	@echo "📦 Containers:"
-	@docker-compose ps
-	@echo ""
-	@echo "🌐 API:"
-	@curl -s http://localhost:8080 | jq . || echo "❌ API não está respondendo"
-	@echo ""
-	@echo "💾 MySQL:"
-	@docker-compose exec mysql mysql -uroot -psecret -e "SELECT 1" > /dev/null 2>&1 && echo "✅ MySQL OK" || echo "❌ MySQL com problema"
-	@echo ""
-	@echo "🔴 Redis:"
-	@docker-compose exec redis redis-cli ping > /dev/null 2>&1 && echo "✅ Redis OK" || echo "❌ Redis com problema"
+redis: ## Acessa Redis CLI
+	@echo "$(GREEN)🔴 Acessando Redis...$(NC)"
+	docker exec -it transfer-redis redis-cli
 
-install: start ## Alias para start
+install: ## Instala dependências do composer
+	@echo "$(GREEN)📦 Instalando dependências...$(NC)"
+	docker exec -it transfer-app composer install
+
+transfer: ## Faz uma transferência de teste
+	@echo "$(GREEN)💸 Executando transferência de teste...$(NC)"
+	curl -X POST http://localhost:8080/transfer \
+		-H "Content-Type: application/json" \
+		-d '{"value": 50.00, "payer": 1, "payee": 4}' \
+		| jq .
+
+check-balance: ## Verifica saldo dos usuários
+	@echo "$(GREEN)💰 Saldos atuais:$(NC)"
+	docker exec -it transfer-mysql mysql -u transfer_user -ptransfer_pass simplified_transfer \
+		-e "SELECT id, fullName, type, balance FROM users;"
+
+clean: ## Remove containers, volumes e cache
+	@echo "$(YELLOW)🧹 Limpando tudo...$(NC)"
+	docker-compose down -v
+	rm -rf coverage/ .phpunit.cache/ .php-cs-fixer.cache
+	@echo "$(GREEN)✅ Limpeza concluída!$(NC)"

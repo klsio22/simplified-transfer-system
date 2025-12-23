@@ -5,39 +5,29 @@ declare(strict_types=1);
 $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__)
     ->exclude('vendor')
-    ->exclude('storage')
-    ->exclude('bootstrap/cache')
-    ->notPath('public/index.php')
-    ->name('*.php')
-    ->ignoreDotFiles(true)
-    ->ignoreVCS(true);
+    ->exclude('coverage')
+    ->exclude('.phpunit.cache');
 
 $config = new PhpCsFixer\Config();
-
 return $config
     ->setRules([
         '@PSR12' => true,
         'array_syntax' => ['syntax' => 'short'],
-        'binary_operator_spaces' => [
-            'default' => 'single_space',
-        ],
-        'blank_line_after_namespace' => true,
-        'blank_line_after_opening_tag' => true,
-        'cast_spaces' => ['space' => 'single'],
-        'concat_space' => ['spacing' => 'one'],
-        'declare_strict_types' => true,
-        'function_typehint_space' => true,
-        'method_argument_space' => ['on_multiline' => 'ensure_fully_multiline'],
-        'no_empty_statement' => true,
-        'no_leading_import_slash' => true,
-        'no_trailing_comma_in_singleline' => true,
-        'no_unused_imports' => true,
-        'no_whitespace_in_blank_line' => true,
         'ordered_imports' => ['sort_algorithm' => 'alpha'],
-        'return_type_declaration' => ['space_before' => 'none'],
-        'single_quote' => true,
+        'no_unused_imports' => true,
+        'not_operator_with_successor_space' => true,
         'trailing_comma_in_multiline' => true,
-        'whitespace_after_comma_in_array' => true,
+        'phpdoc_scalar' => true,
+        'unary_operator_spaces' => true,
+        'binary_operator_spaces' => true,
+        'blank_line_before_statement' => [
+            'statements' => ['break', 'continue', 'declare', 'return', 'throw', 'try'],
+        ],
+        'phpdoc_single_line_var_spacing' => true,
+        'phpdoc_var_without_name' => true,
+        'method_argument_space' => [
+            'on_multiline' => 'ensure_fully_multiline',
+            'keep_multiple_spaces_after_comma' => true,
+        ],
     ])
-    ->setFinder($finder)
-    ->setRiskyAllowed(true);
+    ->setFinder($finder);

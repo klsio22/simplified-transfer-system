@@ -30,49 +30,84 @@ class TransferController
      */
     public function transfer(Request $request, Response $response): Response
     {
-        $data = $request->getParsedBody();
+        $raw = $this->extractRequestData($request);
+
+        $payload = [];
+        $status = 200;
 
         // Validação de campos obrigatórios
-        $validation = $this->validatePayload($data);
+        $validation = $this->validatePayload($raw);
         if ($validation !== null) {
-            return $this->jsonResponse($response, $validation, 400);
+            $payload = $validation;
+            $status = 400;
+        } else {
+            $data = $this->normalizeRequestData($raw);
+            if ($data === null) {
+                $payload = ['error' => 'Invalid payload'];
+                $status = 400;
+            } else {
+                try {
+                    $result = $this->executeTransferFromData($data);
+                    $payload = $result;
+                    $status = 200;
+                } catch (Exception $e) {
+                    $status = $this->getStatusCodeFromException($e);
+                    if ($this->flash !== null) {
+                        $this->flash->addMessage('error', $e->getMessage());
+                    }
+
+                    $payload = ['error' => $e->getMessage()];
+                }
+            }
         }
 
-        // Ensure $data is an array for offset access
+        return $this->jsonResponse($response, $payload, $status);
+    }
+
+    /**
+     * Extract raw parsed body from the request.
+     *
+     * @return array<string,mixed>|object|null
+     */
+    private function extractRequestData(Request $request): array|object|null
+    {
+        return $request->getParsedBody();
+    }
+
+    /**
+     * Normalize parsed body into an array or null if invalid.
+     *
+     * @param array<string,mixed>|object|null $data
+     * @return array<string,mixed>|null
+     */
+    private function normalizeRequestData(array|object|null $data): ?array
+    {
         if (is_object($data)) {
             $data = (array) $data;
         }
 
-        if (!is_array($data)) {
-            return $this->jsonResponse($response, ['error' => 'Invalid payload'], 400);
+        return is_array($data) ? $data : null;
+    }
+
+    /**
+     * Perform the transfer using validated array data.
+     *
+     * @param array<string,mixed> $data
+     * @return array<string,mixed>
+     */
+    private function executeTransferFromData(array $data): array
+    {
+        $result = $this->transferService->transfer(
+            (int) $data['payer'],
+            (int) $data['payee'],
+            (float) $data['value']
+        );
+
+        if ($this->flash !== null) {
+            $this->flash->addMessage('success', 'Transfer completed successfully');
         }
 
-        try {
-            // Executa transferência
-            $result = $this->transferService->transfer(
-                (int) $data['payer'],
-                (int) $data['payee'],
-                (float) $data['value']
-            );
-
-            // add flash message if available
-            if ($this->flash !== null) {
-                $this->flash->addMessage('success', 'Transfer completed successfully');
-            }
-
-            return $this->jsonResponse($response, $result, 200);
-        } catch (Exception $e) {
-            // Determina status code baseado no código da exceção
-            $statusCode = $this->getStatusCodeFromException($e);
-            // add flash error
-            if ($this->flash !== null) {
-                $this->flash->addMessage('error', $e->getMessage());
-            }
-
-            return $this->jsonResponse($response, [
-                'error' => $e->getMessage(),
-            ], $statusCode);
-        }
+        return $result;
     }
 
     /**

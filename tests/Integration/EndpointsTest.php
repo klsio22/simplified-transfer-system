@@ -33,8 +33,10 @@ class EndpointsTest extends TestCase
             // stub HealthController for tests
             $c->set(\App\Controllers\HealthController::class, function () {
                 return new class {
-                    public function hello(\Psr\Http\Message\ServerRequestInterface $request, \Psr\Http\Message\ResponseInterface $response)
-                    {
+                    public function hello(
+                        \Psr\Http\Message\ServerRequestInterface $request,
+                        \Psr\Http\Message\ResponseInterface $response
+                    ) {
                         $data = ['message' => 'Hello, World!'];
                         $response->getBody()->write((string) json_encode($data));
                         return $response
@@ -53,8 +55,12 @@ class EndpointsTest extends TestCase
                         $this->userRepository = $userRepository;
                     }
 
-                    public function show(\Psr\Http\Message\ServerRequestInterface $request, \Psr\Http\Message\ResponseInterface $response, array $args = [])
-                    {
+                    public function show(
+                        \Psr\Http\Message\ServerRequestInterface $request,
+                        \Psr\Http\Message\ResponseInterface $response,
+                        array $args = []
+                    ) {
+
                         $id = (int) ($args['id'] ?? 0);
 
                         if ($id <= 0) {
@@ -164,12 +170,23 @@ class EndpointsTest extends TestCase
                         $this->transferService = $transferService;
                     }
 
-                    public function transfer(\Psr\Http\Message\ServerRequestInterface $request, \Psr\Http\Message\ResponseInterface $response)
-                    {
+                    public function transfer(
+                        \Psr\Http\Message\ServerRequestInterface $request,
+                        \Psr\Http\Message\ResponseInterface $response
+                    ) {
+
                         $data = $request->getParsedBody();
 
-                        if ($data === null || (is_object($data) && (array)$data === []) || (is_array($data) && $data === [])) {
-                            return $this->jsonResponse($response, ['error' => 'Invalid or empty payload'], 422);
+                        if (
+                            $data === null ||
+                            (is_object($data) && (array)$data === []) ||
+                            (is_array($data) && $data === [])
+                        ) {
+                            return $this->jsonResponse(
+                                $response,
+                                ['error' => 'Invalid or empty payload'],
+                                422
+                            );
                         }
 
                         if (is_object($data)) {
@@ -206,8 +223,12 @@ class EndpointsTest extends TestCase
                         }
                     }
 
-                    private function jsonResponse(\Psr\Http\Message\ResponseInterface $response, array $data, int $statusCode)
-                    {
+                    private function jsonResponse(
+                        \Psr\Http\Message\ResponseInterface $response,
+                        array $data,
+                        int $statusCode
+                    ) {
+
                         $response->getBody()->write((string) json_encode($data));
                         return $response
                             ->withHeader('Content-Type', 'application/json')

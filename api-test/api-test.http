@@ -7,7 +7,7 @@ GET {{baseUrl}}/
 ###
 
 ### Balance - Get saldo usuário 1
-GET {{baseUrl}}/balance/24
+GET {{baseUrl}}/balance/25
 
 ###
 
@@ -120,8 +120,8 @@ Content-Type: {{contentType}}
 
 {
   "fullName": "Maria Oliveira fernades",
-  "cpf": "22233344455",
-  "email": "maria@example.com",
+  "cpf": "22233344453",
+  "email": "maria2@example.com",
   "password": "senha123",
   "type": "common"
 }
@@ -200,7 +200,7 @@ POST {{baseUrl}}/transfer
 Content-Type: {{contentType}}
 
 {
-  "value": 15.50,
+  "value": 15.00,
   "payer": 25,
   "payee": 24
 }

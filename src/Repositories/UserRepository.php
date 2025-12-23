@@ -77,12 +77,12 @@ class UserRepository
     public function create(User $user): int
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO users (full_name, cpf, email, password, type, balance) 
+            "INSERT INTO users (fullName, cpf, email, password, type, balance) 
              VALUES (?, ?, ?, ?, ?, ?)"
         );
         
         $stmt->execute([
-            $user->full_name,
+            $user->fullName,
             $user->cpf,
             $user->email,
             $user->password,
@@ -108,7 +108,8 @@ class UserRepository
     {
         $user = new User();
         $user->id = (int) $data['id'];
-        $user->full_name = $data['full_name'];
+        // Support both 'fullName' and 'full_name' column naming
+        $user->fullName = (string) ($data['fullName'] ?? $data['full_name'] ?? '');
         $user->cpf = $data['cpf'];
         $user->email = $data['email'];
         $user->password = $data['password'];

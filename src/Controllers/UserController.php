@@ -26,7 +26,7 @@ class UserController
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
-        $required = ['full_name', 'cpf', 'email', 'password', 'type'];
+        $required = ['fullName', 'cpf', 'email', 'password', 'type'];
         $errors = [];
 
         foreach ($required as $f) {
@@ -61,7 +61,7 @@ class UserController
 
         // Create user
         $user = new User();
-        $user->full_name = (string) $data['full_name'];
+        $user->fullName = (string) ($data['fullName'] ?? $data['full_name']);
         $user->cpf = (string) $data['cpf'];
         $user->email = (string) $data['email'];
         $user->password = password_hash((string) $data['password'], PASSWORD_DEFAULT);

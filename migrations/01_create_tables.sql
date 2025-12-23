@@ -12,7 +12,7 @@ USE simplified_transfer;
 -- Tabela de usuários
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    full_name VARCHAR(255) NOT NULL,
+    fullName VARCHAR(255) NOT NULL,
     cpf VARCHAR(14) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
@@ -47,13 +47,13 @@ CREATE TABLE IF NOT EXISTS transfers (
 -- ============================================
 
 -- Usuários comuns (podem enviar e receber)
-INSERT INTO users (full_name, cpf, email, password, type, balance) VALUES
+INSERT INTO users (fullName, cpf, email, password, type, balance) VALUES
 ('João Silva', '123.456.789-00', 'joao.silva@example.com', '$2y$10$YourHashedPasswordHere', 'common', 1000.00),
 ('Maria Oliveira', '987.654.321-00', 'maria.oliveira@example.com', '$2y$10$YourHashedPasswordHere', 'common', 500.00),
 ('Pedro Santos', '111.222.333-44', 'pedro.santos@example.com', '$2y$10$YourHashedPasswordHere', 'common', 750.00);
 
 -- Lojistas (só podem receber)
-INSERT INTO users (full_name, cpf, email, password, type, balance) VALUES
+INSERT INTO users (fullName, cpf, email, password, type, balance) VALUES
 ('Loja ABC Ltda', '12.345.678/0001-90', 'contato@lojaabc.com', '$2y$10$YourHashedPasswordHere', 'shopkeeper', 0.00),
 ('Comércio XYZ ME', '98.765.432/0001-10', 'vendas@comercioxyz.com', '$2y$10$YourHashedPasswordHere', 'shopkeeper', 150.00);
 

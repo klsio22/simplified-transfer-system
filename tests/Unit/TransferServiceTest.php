@@ -141,7 +141,7 @@ class TransferServiceTest extends TestCase
     {
         $user = new User();
         $user->id = $id;
-        $user->full_name = "Common User {$id}";
+        $user->fullName = "Common User {$id}";
         $user->cpf = "12345678900";
         $user->email = "user{$id}@example.com";
         $user->type = 'common';
@@ -154,7 +154,7 @@ class TransferServiceTest extends TestCase
     {
         $user = new User();
         $user->id = $id;
-        $user->full_name = "Shopkeeper {$id}";
+        $user->fullName = "Shopkeeper {$id}";
         $user->cpf = "98765432100";
         $user->email = "shop{$id}@example.com";
         $user->type = 'shopkeeper';

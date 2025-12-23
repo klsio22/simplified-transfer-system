@@ -109,3 +109,60 @@ Content-Type: {{contentType}}
   "payer": 999,
   "payee": 1
 }
+
+### Users - Criação - Sucesso
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "fullName": "Maria Oliveira",
+  "cpf": "22233344455",
+  "email": "maria@example.com",
+  "password": "senha123",
+  "type": "common"
+}
+
+### Users - Criação - Falha CPF duplicado
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "fullName": "Outra Pessoa",
+  "cpf": "22233344455",
+  "email": "outra@example.com",
+  "password": "senha123",
+  "type": "common"
+}
+
+### Users - Criação - Falha Email duplicado
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "fullName": "Pessoa 2",
+  "cpf": "33344455566",
+  "email": "maria@example.com",
+  "password": "senha123",
+  "type": "common"
+}
+
+### Users - Criação - Falha Email inválido
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "fullName": "Invalido Email",
+  "cpf": "44455566677",
+  "email": "not-an-email",
+  "password": "senha123",
+  "type": "common"
+}
+
+### Users - Criação - Falha Campos ausentes
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "fullName": "Sem Campos",
+  "cpf": "55566677788"
+}

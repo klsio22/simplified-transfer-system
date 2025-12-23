@@ -7,7 +7,7 @@ namespace App\Models;
 class User
 {
     public int $id;
-    public string $full_name;
+    public string $fullName;
     public string $cpf;
     public string $email;
     public string $password;
@@ -46,7 +46,7 @@ class User
 
     public function getFullName(): string
     {
-        return $this->full_name;
+        return $this->fullName;
     }
 
     public function getBalance(): float

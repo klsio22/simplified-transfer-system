@@ -84,7 +84,7 @@ transfer: ## Faz uma transferência de teste
 check-balance: ## Verifica saldo dos usuários
 	@echo "$(GREEN)💰 Saldos atuais:$(NC)"
 	docker exec -it transfer-mysql mysql -u transfer_user -ptransfer_pass simplified_transfer \
-		-e "SELECT id, full_name, type, balance FROM users;"
+		-e "SELECT id, fullName, type, balance FROM users;"
 
 clean: ## Remove containers, volumes e cache
 	@echo "$(YELLOW)🧹 Limpando tudo...$(NC)"

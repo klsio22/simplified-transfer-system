@@ -37,7 +37,7 @@ class BalanceController
 
         $payload = [
             'id' => $user->getId(),
-            'full_name' => $user->getFullName(),
+            'fullName' => $user->getFullName(),
             'balance' => (float) $user->getBalance(),
         ];
 

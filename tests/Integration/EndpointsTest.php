@@ -38,7 +38,7 @@ class EndpointsTest extends TestCase
                         if ($id === 1) {
                             $u = new User();
                             $u->id = 1;
-                            $u->full_name = 'Usuário Comum';
+                            $u->fullName = 'Usuário Comum';
                             $u->cpf = '123';
                             $u->email = 'comum@example.com';
                             $u->password = 'x';
@@ -50,7 +50,7 @@ class EndpointsTest extends TestCase
                         if ($id === 4) {
                             $u = new User();
                             $u->id = 4;
-                            $u->full_name = 'Loja ABC';
+                            $u->fullName = 'Loja ABC';
                             $u->cpf = '999';
                             $u->email = 'loja@example.com';
                             $u->password = 'x';

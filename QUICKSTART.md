@@ -66,7 +66,7 @@ curl -X POST http://localhost:8080/transfer \
 docker exec -it transfer-mysql mysql -u transfer_user -ptransfer_pass simplified_transfer
 
 # Ver usuários e saldos
-SELECT id, full_name, type, balance FROM users;
+SELECT id, fullName, type, balance FROM users;
 
 # Ver histórico de transferências
 SELECT * FROM transfers ORDER BY created_at DESC LIMIT 10;

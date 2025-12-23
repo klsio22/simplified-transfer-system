@@ -7,12 +7,14 @@ namespace App\Controllers;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use App\Services\TransferService;
+use Slim\Flash\Messages as FlashMessages;
 use Exception;
 
 class TransferController
 {
     public function __construct(
-        private TransferService $transferService
+        private TransferService $transferService,
+        private ?FlashMessages $flash = null
     ) {
     }
 
@@ -44,13 +46,22 @@ class TransferController
                 (float) $data['value']
             );
 
+            // add flash message if available
+            if ($this->flash !== null) {
+                $this->flash->addMessage('success', 'Transfer completed successfully');
+            }
+
             return $this->jsonResponse($response, [
                 'message' => 'Transfer completed successfully',
             ], 200);
         } catch (Exception $e) {
             // Determina status code baseado no código da exceção
             $statusCode = $this->getStatusCodeFromException($e);
-            
+            // add flash error
+            if ($this->flash !== null) {
+                $this->flash->addMessage('error', $e->getMessage());
+            }
+
             return $this->jsonResponse($response, [
                 'error' => $e->getMessage(),
             ], $statusCode);

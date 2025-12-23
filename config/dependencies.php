@@ -8,6 +8,7 @@ use App\Services\AuthorizeService;
 use App\Services\NotifyService;
 use App\Services\TransferService;
 use App\Repositories\UserRepository;
+use Slim\Flash\Messages;
 
 return [
     PDO::class => function (ContainerInterface $c) {
@@ -30,4 +31,7 @@ return [
     NotifyService::class => DI\create(),
     TransferService::class => DI\autowire(),
     UserRepository::class => DI\autowire(),
+    Messages::class => function () {
+        return new Messages();
+    },
 ];

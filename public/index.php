@@ -12,6 +12,11 @@ require __DIR__ . '/../vendor/autoload.php';
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 
+// Start session for flash messages
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // Container DI (PHP-DI)
 $containerBuilder = new ContainerBuilder();
 $containerBuilder->addDefinitions(require __DIR__ . '/../config/dependencies.php');

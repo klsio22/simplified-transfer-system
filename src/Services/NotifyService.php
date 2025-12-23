@@ -10,11 +10,17 @@ use GuzzleHttp\Exception\GuzzleException;
 class NotifyService
 {
     public const ENDPOINT = 'https://util.devi.tools/api/v1/notify';
+    public const MOCK_ENDPOINT = '/mock/notify';
 
     private Client $client;
+    private bool $silentMode = false;
+    private string $endpoint;
 
-    public function __construct()
+    public function __construct(bool $silentMode = false)
     {
+        $this->silentMode = $silentMode || (getenv('APP_ENV') === 'testing');
+        $this->endpoint = (getenv('APP_ENV') === 'testing') ? self::MOCK_ENDPOINT : self::ENDPOINT;
+
         $this->client = new Client([
             'timeout' => 5,
             'connect_timeout' => 3,
@@ -31,12 +37,14 @@ class NotifyService
     {
         try {
             // Fire-and-forget: não espera resposta e não bloqueia
-            $this->client->postAsync(self::ENDPOINT, [
+            $this->client->postAsync($this->endpoint, [
                 'json' => ['user_id' => $payeeId],
             ])->wait(false); // false = não espera completar
         } catch (GuzzleException $e) {
             // Silent log - unstable notification service should not break transfer
-            error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());
+            if (!$this->silentMode) {
+                error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());
+            }
 
             // In production: enqueue for retry or dead letter
         }
@@ -48,7 +56,7 @@ class NotifyService
     public function notifySync(int $payeeId): bool
     {
         try {
-            $response = $this->client->post(self::ENDPOINT, [
+            $response = $this->client->post($this->endpoint, [
                 'json' => ['user_id' => $payeeId],
             ]);
 
@@ -56,7 +64,9 @@ class NotifyService
 
             return isset($data['message']) && $data['message'] === 'Success';
         } catch (GuzzleException $e) {
-            error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());
+            if (!$this->silentMode) {
+                error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());
+            }
             return false;
         }
     }

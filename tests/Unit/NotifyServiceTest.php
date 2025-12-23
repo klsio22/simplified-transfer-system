@@ -25,7 +25,7 @@ class NotifyServiceTest extends TestCase
 
         $this->mockClient = $this->createMock(Client::class);
 
-        $this->notifyService = new NotifyService();
+        $this->notifyService = new NotifyService(true);
 
         $reflection = new \ReflectionClass(NotifyService::class);
         $property = $reflection->getProperty('client');

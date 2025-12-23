@@ -170,3 +170,26 @@ Content-Type: {{contentType}}
   "fullName": "Sem Campos",
   "cpf": "55566677788"
 }
+
+### Notify - Sucesso (payee usuário)
+POST https://util.devi.tools/api/v1/notify
+Content-Type: application/json
+
+{
+  "user_id": 24
+}
+
+### Notify - Sucesso (payee lojista)
+POST https://util.devi.tools/api/v1/notify
+Content-Type: application/json
+
+{
+  "user_id": 26
+}
+
+### Notify - Falha - Payload inválido (sem user_id)
+POST https://util.devi.tools/api/v1/notify
+Content-Type: application/json
+
+{}
+

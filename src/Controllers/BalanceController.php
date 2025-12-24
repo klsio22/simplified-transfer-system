@@ -6,7 +6,6 @@ namespace App\Controllers;
 
 use App\Repositories\UserRepository;
 use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
 
 class BalanceController
 {
@@ -19,7 +18,7 @@ class BalanceController
      *
      * @param array<string,mixed> $args
      */
-    public function show(Request $request, Response $response, array $args): Response
+    public function show(Response $response, array $args): Response
     {
         $id = (int) ($args['id'] ?? 0);
 

@@ -69,6 +69,11 @@ function phpfmt {
     ./vendor/bin/php-cs-fixer fix ${TEST_PATH}
 }
 
+function phpmd {
+    TEST_PATH="${@:-.}"
+   ./vendor/bin/phpmd src text cleancode,codesize,controversial,design,naming,unusedcode
+}
+
 function git:clean:branchs {
     git branch | grep -v '\*\|master\|main\|develop\|production' | xargs -n 1 git branch -D
 }

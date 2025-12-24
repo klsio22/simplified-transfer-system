@@ -36,3 +36,5 @@ composer.lock
 # Build
 /build/
 /dist/
+
+.cache

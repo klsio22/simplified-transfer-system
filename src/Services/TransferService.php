@@ -99,13 +99,40 @@ class TransferService
             throw new InvalidTransferException('Invalid payload format');
         }
 
-        // At this point, $raw is guaranteed to be array<string, mixed>
+        // Validate required fields
+        $this->validatePayloadFields($raw);
+
+        // Extract and validate field values
+        ['payer' => $payerId, 'payee' => $payeeId, 'value' => $transferValue] = $this->extractAndValidateFields($raw);
+
+        // Delegate to transfer method (will perform business validations and DB operations)
+        return $this->transfer($payerId, $payeeId, $transferValue);
+    }
+
+    /**
+     * Validate that required fields exist in payload
+     *
+     * @param array<string, mixed> $raw
+     * @throws InvalidTransferException
+     */
+    private function validatePayloadFields(array $raw): void
+    {
         $required = ['value', 'payer', 'payee'];
-        $missing = array_filter($required, fn($f) => ! array_key_exists($f, $raw));
+        $missing = array_filter($required, fn($field) => ! array_key_exists($field, $raw));
         if (! empty($missing)) {
             throw new InvalidTransferException('Missing required fields: ' . implode(', ', $missing));
         }
+    }
 
+    /**
+     * Extract and validate individual field values
+     *
+     * @param array<string, mixed> $raw
+     * @return array{payer: int, payee: int, value: float}
+     * @throws InvalidTransferException
+     */
+    private function extractAndValidateFields(array $raw): array
+    {
         $value = $raw['value'];
         $payer = $raw['payer'];
         $payee = $raw['payee'];
@@ -123,8 +150,11 @@ class TransferService
             throw new InvalidTransferException('The "payee" field must be a valid ID');
         }
 
-        // Delegate to transfer method (will perform business validations and DB operations)
-        return $this->transfer((int)$payer, (int)$payee, (float)$value);
+        return [
+            'payer' => (int)$payer,
+            'payee' => (int)$payee,
+            'value' => (float)$value,
+        ];
     }
 
     /**

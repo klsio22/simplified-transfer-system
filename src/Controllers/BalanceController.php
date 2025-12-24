@@ -21,10 +21,10 @@ class BalanceController
      */
     public function show(Response $response, array $args): Response
     {
-        $id = $args['id'] ?? null;
+        $userId = $args['id'] ?? null;
 
         try {
-            $user = $this->balanceService->getBalance($id);
+            $user = $this->balanceService->getBalance($userId);
 
             $payload = [
                 'id' => $user->getId(),

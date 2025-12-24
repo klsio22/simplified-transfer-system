@@ -23,25 +23,25 @@ class UserService
      */
     public function createUser(array $data): array
     {
-        // Validar campos obrigatórios
-        $required = ['full_name', 'cpf', 'email', 'password', 'type'];
-        $errors = [];
+        // Validate field format and uniqueness
+        $this->validateUserData($data);
 
-        foreach ($required as $field) {
-            if (empty($data[$field]) && empty($data[$this->camelCase($field)] ?? null)) {
-                $errors[$field] = 'Required field';
-            }
-        }
+        // Create and persist user
+        $user = $this->buildUserFromData($data);
+        $userId = $this->userRepository->create($user);
 
-        // Validar email
-        if (! empty($data['email']) && ! filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Invalid email';
-        }
+        return ['success' => true, 'id' => $userId];
+    }
 
-        // Validar tipo
-        if (! empty($data['type']) && ! in_array($data['type'], ['common', 'shopkeeper'], true)) {
-            $errors['type'] = 'Invalid type (common|shopkeeper)';
-        }
+    /**
+     * Validate user data format and uniqueness constraints
+     *
+     * @param array<string,mixed> $data
+     * @throws InvalidTransferException
+     */
+    private function validateUserData(array $data): void
+    {
+        $errors = $this->collectValidationErrors($data);
 
         if (! empty($errors)) {
             $errorJson = json_encode($errors);
@@ -51,17 +51,53 @@ class UserService
             throw new InvalidTransferException($errorJson);
         }
 
-        // Validar unicidade de CPF
-        if ($this->userRepository->findByCpf($data['cpf']) !== null) {
+        // Validate uniqueness constraints
+        if ($this->userRepository->findByCpf((string)$data['cpf']) !== null) {
             throw new InvalidTransferException('CPF already registered');
         }
 
-        // Validar unicidade de email
-        if ($this->userRepository->findByEmail($data['email']) !== null) {
+        if ($this->userRepository->findByEmail((string)$data['email']) !== null) {
             throw new InvalidTransferException('Email already registered');
         }
+    }
 
-        // Criar usuário
+    /**
+     * Collect validation errors for required fields and formats
+     *
+     * @param array<string,mixed> $data
+     * @return array<string,string>
+     */
+    private function collectValidationErrors(array $data): array
+    {
+        $errors = [];
+        $required = ['full_name', 'cpf', 'email', 'password', 'type'];
+
+        foreach ($required as $field) {
+            if (empty($data[$field]) && empty($data[$this->toCamelCase($field)] ?? null)) {
+                $errors[$field] = 'Required field';
+            }
+        }
+
+        // Validate email format
+        if (! empty($data['email']) && ! filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Invalid email';
+        }
+
+        // Validate type field
+        if (! empty($data['type']) && ! in_array($data['type'], ['common', 'shopkeeper'], true)) {
+            $errors['type'] = 'Invalid type (common|shopkeeper)';
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Build a User object from request data
+     *
+     * @param array<string,mixed> $data
+     */
+    private function buildUserFromData(array $data): User
+    {
         $user = new User();
         $user->fullName = (string) ($data['fullName'] ?? $data['full_name'] ?? '');
         $user->cpf = (string) $data['cpf'];
@@ -70,17 +106,18 @@ class UserService
         $user->type = (string) $data['type'];
         $user->balance = isset($data['balance']) ? (float) $data['balance'] : 0.0;
 
-        $id = $this->userRepository->create($user);
-
-        return ['success' => true, 'id' => $id];
+        return $user;
     }
 
-    private function camelCase(string $s): string
+    /**
+     * Convert snake_case to camelCase
+     */
+    private function toCamelCase(string $snakeCase): string
     {
-        $parts = explode('_', $s);
+        $parts = explode('_', $snakeCase);
         $camel = array_shift($parts);
-        foreach ($parts as $p) {
-            $camel .= ucfirst($p);
+        foreach ($parts as $part) {
+            $camel .= ucfirst($part);
         }
 
         return $camel;

@@ -81,6 +81,54 @@ class TransferService
     }
 
     /**
+     * Processa e valida um payload bruto de transferência (usado por controllers)
+     *
+     * @param array<string,mixed>|object|null $raw
+     * @return array<string,mixed>
+     * @throws InvalidTransferException|BusinessRuleException|UserNotFoundException|UnauthorizedException|TransferProcessingException
+     */
+    public function processPayload(array|object|null $raw): array
+    {
+        if ($raw === null) {
+            throw new InvalidTransferException('Invalid or empty payload');
+        }
+
+        if (is_object($raw)) {
+            $raw = (array) $raw;
+        }
+
+        if (! is_array($raw)) {
+            throw new InvalidTransferException('Invalid payload format');
+        }
+
+        $required = ['value', 'payer', 'payee'];
+        $missing = array_filter($required, fn($f) => ! array_key_exists($f, $raw));
+        if (! empty($missing)) {
+            throw new InvalidTransferException('Missing required fields: ' . implode(', ', $missing));
+        }
+
+        $value = $raw['value'];
+        $payer = $raw['payer'];
+        $payee = $raw['payee'];
+
+        // Validate fields
+        if (! is_numeric($value) || (float)$value <= 0) {
+            throw new InvalidTransferException('The "value" field must be a number greater than zero');
+        }
+
+        if (! is_numeric($payer) || (int)$payer <= 0) {
+            throw new InvalidTransferException('The "payer" field must be a valid ID');
+        }
+
+        if (! is_numeric($payee) || (int)$payee <= 0) {
+            throw new InvalidTransferException('The "payee" field must be a valid ID');
+        }
+
+        // Delegate to transfer method (will perform business validations and DB operations)
+        return $this->transfer((int)$payer, (int)$payee, (float)$value);
+    }
+
+    /**
      * Valida dados básicos da transferência
      */
     private function validateTransferData(int $payerId, int $payeeId, float $value): void

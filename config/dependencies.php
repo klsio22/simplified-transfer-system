@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use App\Repositories\UserRepository;
 use App\Services\AuthorizeService;
+use App\Services\BalanceService;
 use App\Services\NotifyService;
 use App\Services\TransferService;
+use App\Services\UserService;
 use Cycle\Database\DatabaseManager;
 use Cycle\ORM\EntityManager;
 use Cycle\ORM\ORM;
@@ -46,6 +48,8 @@ return [
     AuthorizeService::class => DI\create(),
     NotifyService::class => DI\create(),
     TransferService::class => DI\autowire(),
+    UserService::class => DI\autowire(),
+    BalanceService::class => DI\autowire(),
     UserRepository::class => DI\autowire(),
     Messages::class => function () {
         return new Messages();

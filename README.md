@@ -1,48 +1,174 @@
-# Simplified Transfer System
+# PicPay Simplificado - Transfer System
 
-![PHP Version](https://img.shields.io/badge/PHP-8.2-777BB4?logo=php&logoColor=white)
-![Slim Framework](https://img.shields.io/badge/Slim-4.12-719E40?logo=slim&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-Alpine-DC382D?logo=redis&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)
-![PHPStan](https://img.shields.io/badge/PHPStan-Level%208-8892BF)
-![PSR](https://img.shields.io/badge/PSR-4%20%7C%207%20%7C%2011%20%7C%2012%20%7C%2015-blue)
+![PHP](https://img.shields.io/badge/PHP-8.2%2F8.3-777BB4?logo=php) ![Slim](https://img.shields.io/badge/Slim-4.12-719E40) ![Tests](https://img.shields.io/badge/Tests-84%20passing-success) ![PHPStan](https://img.shields.io/badge/PHPStan-Level%208-8892BF) ![PSR-12](https://img.shields.io/badge/PSR-12-blue)
 
-API RESTful minimalista para realizar transferências de dinheiro entre usuários comuns e lojistas.
+**API RESTful de transferências** com **Slim Framework 4**, **Clean Architecture**, **SOLID** e 84 testes automatizados.
 
-Implementada com **Slim Framework 4** — escolha consciente por ser leve, performático e permitir total controle sobre a arquitetura sem métodos mágicos ou facilidades excessivas.
-
-> 💡 **Projeto desenvolvido seguindo boas práticas de engenharia de software**, clean code, SOLID, design patterns e PSRs.
+Sistema completo de pagamentos entre usuários comuns e lojistas, com transações atômicas, validação de saldo, autorização externa e notificações assíncronas.
 
 ---
 
 ## 🚀 Quick Start
 
 ```bash
-# 1. Clone e acesse o diretório
+# Clone e inicie
 git clone <repo> && cd simplified-transfer-system
+./run up
 
-# 2. Inicie os containers
-docker-compose up -d
-
-# 3. Aguarde 30s para o MySQL inicializar
-
-# 4. Faça uma transferência de teste
+# Teste a API (aguarde 30s)
 curl -X POST http://localhost:8080/transfer \
   -H "Content-Type: application/json" \
   -d '{"value": 100.00, "payer": 1, "payee": 4}'
-
-# Resposta: {"message":"Transferência realizada com sucesso"}
 ```
-
-📖 **Leia o [QUICKSTART.md](QUICKSTART.md) para mais detalhes e exemplos**  
-🏛️ **Veja a [ARCHITECTURE.md](ARCHITECTURE.md) para entender a arquitetura**
 
 ---
 
-## ✅ Checklist de entrega
+## ✅ Checklist Completo - PicPay Simplificado
 
-- [x] Endpoint POST /transfer conforme contrato solicitado  
+### ✓ Regras de Negócio Implementadas
+
+- [x] **Cadastro**: Nome, CPF/CNPJ, Email, Senha com unicidade
+- [x] **Transferências**: Usuários enviam para lojistas e outros usuários
+- [x] **Bloqueio**: Lojistas só recebem, não enviam
+- [x] **Validação**: Saldo suficiente antes da transferência
+- [x] **Autorização**: Consulta serviço externo (GET mock)
+- [x] **Transação**: Operação atômica com rollback automático
+- [x] **Notificação**: Envio assíncrono (POST mock)
+- [x] **API RESTful**: POST /transfer conforme contrato
+
+### ✓ Qualidade de Código
+
+- [x] **PSRs**: PSR-4, PSR-7, PSR-11, PSR-12
+- [x] **SOLID**: Single Responsibility, Dependency Inversion
+- [x] **Design Patterns**: Repository, Service Layer, DI, Factory
+- [x] **Testes**: 84 testes (16 controllers + 30 services + 22 repos + 16 integration)
+- [x] **Análise Estática**: PHPStan level 8 (0 erros), PHPCS PSR-12, PHPMD
+- [x] **Docker**: docker-compose.yml completo (PHP + Nginx + MySQL + Redis)
+- [x] **CI Ready**: Script `./run phpfullcheck` para pipeline
+- [x] **Documentação**: README + ARCHITECTURE.md detalhada
+
+---
+
+
+## 📁 Estrutura do Projeto
+
+```
+simplified-transfer-system/
+├── src/
+│   ├── Controllers/     # 4 controllers (Health, Balance, Transfer, User)
+│   ├── Services/        # 5 services (Transfer, Authorize, Notify, Balance, User)
+│   ├── Repositories/    # 1 repository (UserRepository)
+│   ├── Models/          # 1 model (User com lógica de domínio)
+│   ├── Entity/          # 2 entities Cycle ORM (User, Transfer)
+│   └── Core/            # Exceções customizadas
+├── tests/
+│   ├── Unit/            # 68 testes (Controllers, Services, Repositories, Models)
+│   └── Integration/     # 16 testes (4 arquivos de endpoints)
+├── config/              # Database, DI Container, ORM
+├── routes/              # api.php (definição de rotas)
+├── migrations/          # Schema SQL
+├── docker/              # nginx.conf
+├── public/              # index.php (entrypoint)
+├── bin/                 # Scripts utilitários
+├── docker-compose.yml   # Orquestração (PHP + Nginx + MySQL + Redis)
+├── phpstan.neon         # PHPStan level 8
+├── phpunit.xml          # Configuração de testes
+├── .php-cs-fixer.php    # PSR-12
+└── run                  # 🚀 Script helper CLI
+```
+
+**84 testes** | **0 erros PHPStan** | **0 violações PHPCS** | **Cognitive Complexity < 15**
+
+---
+
+## 🛠️ Stack & Comandos
+
+| Tecnologia | Versão | Comando |
+|------------|--------|---------|
+| PHP | 8.2/8.3 | `./run php:console` |
+| Slim Framework | 4.12 | - |
+| MySQL | 8.0 | `./run db:console` |
+| Redis | Alpine | - |
+| Nginx | Alpine | - |
+
+### Comandos do Projeto
+
+```bash
+# Gerenciamento
+./run up              # Inicia containers
+./run down            # Para containers
+./run ps              # Status dos containers
+
+# Testes & Qualidade
+./run test            # Roda todos os testes (84 testes)
+./run phpstan         # Análise estática (level 8)
+./run phpcs           # Verifica code style (PSR-12)
+./run phpcbf          # Corrige code style automaticamente
+./run phpfmt          # PHP-CS-Fixer
+./run phpmd           # Detecta code smells
+./run phpfullcheck    # Roda tudo (cbf + fmt + cs + stan + md + test)
+
+# Banco de Dados
+./run db:console      # Acessa MySQL CLI
+./run db:reset        # Reset do banco + migrations
+./run db:populate     # Popula dados de teste
+```
+
+---
+
+## 🎯 Regras de Negócio
+
+**Tipos de Usuário**:
+- **Common** (Comum): CPF → Pode **enviar** e **receber**
+- **Shopkeeper** (Lojista): CNPJ → Só pode **receber**
+
+**Fluxo de Transferência**:
+1. Validar payload (value > 0, campos obrigatórios)
+2. Verificar se payer não é lojista
+3. Verificar saldo do payer
+4. Consultar serviço autorizador externo
+5. Iniciar transação DB → debitar + creditar + registrar
+6. Commit (ou rollback se erro)
+7. Notificar recebedor (assíncrono)
+
+**Validações em 4 camadas**: Controller → Service → External → Database
+
+---
+
+## 🔧 Instalação & Uso
+
+```bash
+# 1. Clone e configure
+git clone <repo> && cd simplified-transfer-system
+cp .env.example .env
+
+# 2. Inicie (aguarde 30s)
+./run up
+
+# 3. Teste
+curl http://localhost:8080                    # Health check
+curl http://localhost:8080/balance/1          # Consultar saldo
+curl -X POST http://localhost:8080/transfer \ # Transferir
+  -H "Content-Type: application/json" \
+  -d '{"value": 50.00, "payer": 1, "payee": 4}'
+```
+
+**Dados de teste**: User #1 (comum, R$200) → User #4 (lojista, R$0)
+
+---
+
+## 🧪 Testes & Qualidade
+
+```bash
+./run test                # 84 testes passando
+./run phpstan             # PHPStan level 8: 0 erros
+./run phpcs               # PHPCS PSR-12: 0 violações
+./run phpfullcheck        # Roda tudo + testes
+```
+
+**Cobertura**: 84 testes (68 unitários + 16 integração) em 4 camadas (Controllers, Services, Repositories, Models)
+
+---  
 - [x] Validação de saldo do pagador antes da transferência  
 - [x] Bloqueio de transferências enviadas por lojistas  
 - [x] Consulta ao serviço autorizador externo (mock GET)  
@@ -224,7 +350,61 @@ O seed cria automaticamente:
 └── README.md
 ```
 
-## 🎯 Decisões técnicas
+
+## 📚 Arquitetura
+
+**Clean Architecture** com 4 camadas:
+
+```
+Controllers (HTTP) → Services (Business Logic) → Repositories (Data) → Models (Domain)
+```
+
+**Princípios SOLID**:
+- Single Responsibility: Cada classe tem uma única responsabilidade
+- Dependency Inversion: Controllers dependem de Services (abstrações)
+- Open/Closed: Exceções estendem `AppException`, fácil adicionar novas
+
+**Design Patterns**:
+- **Repository**: Abstrai acesso a dados (fácil trocar banco)
+- **Service Layer**: Centraliza lógica de negócio (reutilizável)
+- **Dependency Injection**: PHP-DI gerencia dependências
+- **Factory**: `AppFactory::create()` do Slim
+
+**Transações Atômicas**:
+```php
+try {
+    $db->beginTransaction();
+    $this->debitPayer($payer, $value);
+    $this->creditPayee($payee, $value);
+    $this->recordTransfer(...);
+    $db->commit();
+} catch (\Exception $e) {
+    $db->rollBack(); // Saldo restaurado automaticamente
+    throw $e;
+}
+```
+
+📖 **Detalhes completos**: [ARCHITECTURE.md](ARCHITECTURE.md)
+
+---
+
+## 💡 Melhorias Futuras
+
+**Curto Prazo**: Autenticação JWT, Rate Limiting, Retry Policy, Logs estruturados (Monolog)
+
+**Médio Prazo**: Event Dispatcher, Observabilidade (Prometheus), Read Replicas, Queue (RabbitMQ)
+
+**Longo Prazo**: CQRS + Event Sourcing, Microserviços, Kubernetes, Multi-região
+
+---
+
+## 📄 Licença
+
+MIT License - Projeto open source desenvolvido como desafio técnico PicPay Simplificado.
+
+---
+
+**Desenvolvido com ❤️ usando Slim 4 + Clean Architecture + 84 testes automatizados**
 
 ### Por que Slim Framework 4?
 - **Minimalista**: Sem bloat, apenas o essencial

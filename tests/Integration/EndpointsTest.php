@@ -268,16 +268,28 @@ class EndpointsTest extends TestCase
                         $data = json_decode($body, true);
 
                         if (! is_array($data)) {
-                            return $this->jsonResponse($response, ['error' => true, 'message' => 'Dados inválidos'], 400);
+                            return $this->jsonResponse(
+                                $response,
+                                ['error' => true, 'message' => 'Dados inválidos'],
+                                400
+                            );
                         }
 
                         try {
                             $result = $this->userService->createUser($data);
                             return $this->jsonResponse($response, $result, 201);
                         } catch (\App\Core\InvalidTransferException $e) {
-                            return $this->jsonResponse($response, ['error' => true, 'message' => $e->getMessage()], 422);
+                            return $this->jsonResponse(
+                                $response,
+                                ['error' => true, 'message' => $e->getMessage()],
+                                422
+                            );
                         } catch (\Exception $e) {
-                            return $this->jsonResponse($response, ['error' => true, 'message' => 'Internal server error'], 500);
+                            return $this->jsonResponse(
+                                $response,
+                                ['error' => true, 'message' => 'Internal server error'],
+                                500
+                            );
                         }
                     }
 

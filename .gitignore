@@ -39,3 +39,4 @@ composer.lock
 
 .cache
 .phpunit.cache
+.php-cs-fixer.cache

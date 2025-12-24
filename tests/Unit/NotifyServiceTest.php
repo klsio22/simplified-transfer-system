@@ -23,6 +23,9 @@ class NotifyServiceTest extends TestCase
     {
         parent::setUp();
 
+        // Ensure APP_ENV is set for proper endpoint detection
+        putenv('APP_ENV=testing');
+        
         $this->mockClient = $this->createMock(Client::class);
 
         $this->notifyService = new NotifyService(true);
@@ -171,17 +174,20 @@ class NotifyServiceTest extends TestCase
         $mockResponse = $this->createMock(ResponseInterface::class);
         $mockResponse->method('getBody')->willReturn(Utils::streamFor(json_encode(['message' => 'Success'])));
 
-        // Capture the call arguments
+        // Capture the call arguments - in testing mode, MOCK_ENDPOINT is used
         $this->mockClient->expects($this->once())
             ->method('post')
             ->with(
-                NotifyService::ENDPOINT,
+                NotifyService::MOCK_ENDPOINT,
                 $this->callback(function ($options) {
                     return isset($options['json']['user_id']) && $options['json']['user_id'] === 24;
                 })
             )
             ->willReturn($mockResponse);
 
-        $this->notifyService->notifySync(24);
+        $result = $this->notifyService->notifySync(24);
+        
+        // Add assertion to verify the method returns true on success
+        $this->assertTrue($result);
     }
 }

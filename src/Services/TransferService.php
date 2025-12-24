@@ -118,7 +118,7 @@ class TransferService
     private function validatePayloadFields(array $raw): void
     {
         $required = ['value', 'payer', 'payee'];
-        $missing = array_filter($required, fn($field) => ! array_key_exists($field, $raw));
+        $missing = array_filter($required, fn ($field) => ! array_key_exists($field, $raw));
         if (! empty($missing)) {
             throw new InvalidTransferException('Missing required fields: ' . implode(', ', $missing));
         }

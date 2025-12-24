@@ -48,6 +48,7 @@ class UserService
             if ($errorJson === false) {
                 $errorJson = 'Validation errors occurred';
             }
+
             throw new InvalidTransferException($errorJson);
         }
 

@@ -25,7 +25,7 @@ class NotifyServiceTest extends TestCase
 
         // Ensure APP_ENV is set for proper endpoint detection
         putenv('APP_ENV=testing');
-        
+
         $this->mockClient = $this->createMock(Client::class);
 
         $this->notifyService = new NotifyService(true);
@@ -186,7 +186,7 @@ class NotifyServiceTest extends TestCase
             ->willReturn($mockResponse);
 
         $result = $this->notifyService->notifySync(24);
-        
+
         // Add assertion to verify the method returns true on success
         $this->assertTrue($result);
     }

@@ -38,3 +38,4 @@ composer.lock
 /dist/
 
 .cache
+.phpunit.cache

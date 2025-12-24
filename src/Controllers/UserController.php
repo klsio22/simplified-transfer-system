@@ -22,34 +22,54 @@ class UserController
         $data = json_decode($body, true);
 
         if (! is_array($data)) {
-            if ($this->flash !== null) {
-                $this->flash->addMessage('error', 'Invalid data format');
-            }
+            $this->addFlashMessage('error', 'Invalid data format');
 
             return $this->jsonResponse($response, ['error' => true, 'message' => 'Dados inválidos'], 400);
         }
 
+        ['responseData' => $responseData, 'statusCode' => $statusCode] = $this->handleUserCreation($data);
+
+        return $this->jsonResponse($response, $responseData, $statusCode);
+    }
+
+    /**
+     * Handle user creation logic with error handling
+     *
+     * @param array<string,mixed> $data
+     * @return array{responseData: array<string,mixed>, statusCode: int}
+     */
+    private function handleUserCreation(array $data): array
+    {
         try {
             $result = $this->userService->createUser($data);
+            $this->addFlashMessage('success', 'User created successfully');
 
-            if ($this->flash !== null) {
-                $this->flash->addMessage('success', 'User created successfully');
-            }
-
-            return $this->jsonResponse($response, $result, 201);
+            return [
+                'responseData' => $result,
+                'statusCode' => 201,
+            ];
         } catch (AppException $e) {
-            if ($this->flash !== null) {
-                $this->flash->addMessage('error', $e->getMessage());
-            }
+            $this->addFlashMessage('error', $e->getMessage());
 
-            return $this->jsonResponse($response, ['error' => true, 'message' => $e->getMessage()], $e->getStatusCode());
+            return [
+                'responseData' => ['error' => true, 'message' => $e->getMessage()],
+                'statusCode' => $e->getStatusCode(),
+            ];
         } catch (\Throwable $e) {
             error_log('Unexpected error in user controller: ' . $e->getMessage());
-            if ($this->flash !== null) {
-                $this->flash->addMessage('error', 'Internal server error');
-            }
+            $this->addFlashMessage('error', 'Internal server error');
 
-            return $this->jsonResponse($response, ['error' => true, 'message' => 'Internal server error'], 500);
+            return [
+                'responseData' => ['error' => true, 'message' => 'Internal server error'],
+                'statusCode' => 500,
+            ];
+        }
+    }
+
+    private function addFlashMessage(string $key, string $message): void
+    {
+        if ($this->flash !== null) {
+            $this->flash->addMessage($key, $message);
         }
     }
 

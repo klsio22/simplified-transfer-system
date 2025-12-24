@@ -11,8 +11,7 @@ class UserRepository
 {
     public function __construct(
         private PDO $pdo
-    ) {
-    }
+    ) {}
 
     /**
      * Busca um usuário pelo ID
@@ -77,7 +76,7 @@ class UserRepository
     public function create(User $user): int
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO users (full_name, cpf, email, password, type, balance) 
+            "INSERT INTO users (full_name, cpf, email, password, type, balance)
              VALUES (?, ?, ?, ?, ?, ?)"
         );
 

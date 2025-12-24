@@ -18,7 +18,7 @@ class UserService
      * Cria um novo usuário com validações
      *
      * @param array<string,mixed> $data
-     * @return array<string,int>
+     * @return array<string,int|bool>
      * @throws InvalidTransferException
      */
     public function createUser(array $data): array
@@ -44,7 +44,11 @@ class UserService
         }
 
         if (! empty($errors)) {
-            throw new InvalidTransferException(json_encode($errors));
+            $errorJson = json_encode($errors);
+            if ($errorJson === false) {
+                $errorJson = 'Validation errors occurred';
+            }
+            throw new InvalidTransferException($errorJson);
         }
 
         // Validar unicidade de CPF

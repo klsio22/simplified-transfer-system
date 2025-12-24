@@ -95,12 +95,11 @@ class TransferService
 
         if (is_object($raw)) {
             $raw = (array) $raw;
-        }
-
-        if (! is_array($raw)) {
+        } elseif (! is_array($raw)) { // @phpstan-ignore-line
             throw new InvalidTransferException('Invalid payload format');
         }
 
+        // At this point, $raw is guaranteed to be array<string, mixed>
         $required = ['value', 'payer', 'payee'];
         $missing = array_filter($required, fn($f) => ! array_key_exists($f, $raw));
         if (! empty($missing)) {

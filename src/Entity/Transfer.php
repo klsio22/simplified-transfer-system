@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use Cycle\Annotated\Annotation\Entity;
 use Cycle\Annotated\Annotation\Column;
+use Cycle\Annotated\Annotation\Entity;
 use Cycle\Annotated\Annotation\Relation\BelongsTo;
 use DateTimeImmutable;
 
@@ -99,6 +99,7 @@ class Transfer
     public function setPayerId(int $payerId): self
     {
         $this->payerId = $payerId;
+
         return $this;
     }
 
@@ -106,12 +107,14 @@ class Transfer
     {
         $this->payer = $payer;
         $this->payerId = $payer->getId();
+
         return $this;
     }
 
     public function setPayeeId(int $payeeId): self
     {
         $this->payeeId = $payeeId;
+
         return $this;
     }
 
@@ -119,18 +122,21 @@ class Transfer
     {
         $this->payee = $payee;
         $this->payeeId = $payee->getId();
+
         return $this;
     }
 
     public function setValue(float $value): self
     {
         $this->value = $value;
+
         return $this;
     }
 
     public function setStatus(string $status): self
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -161,18 +167,21 @@ class Transfer
     public function complete(): self
     {
         $this->status = 'completed';
+
         return $this;
     }
 
     public function fail(): self
     {
         $this->status = 'failed';
+
         return $this;
     }
 
     public function cancel(): self
     {
         $this->status = 'cancelled';
+
         return $this;
     }
 }

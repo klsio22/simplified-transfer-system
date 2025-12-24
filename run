@@ -51,7 +51,7 @@ function codecept {
 
 function phpcs {
     TEST_PATH="${@:-.}"
-    ./vendor/bin/phpcs --standard=.phpcs.xml src tests
+    ./vendor/bin/phpcs --standard=.phpcs.xml src tests ${TEST_PATH}
 }
 
 function phpcbf {
@@ -62,6 +62,11 @@ function phpcbf {
 function phpstan {
     TEST_PATH="${@:-}"
     ./vendor/bin/phpstan analyse --memory-limit 1G ${TEST_PATH}
+}
+
+function phpfmt {
+    TEST_PATH="${@:-.}"
+    ./vendor/bin/php-cs-fixer fix ${TEST_PATH}
 }
 
 function git:clean:branchs {

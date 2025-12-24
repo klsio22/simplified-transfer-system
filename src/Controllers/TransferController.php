@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Core\AppException;
+use App\Services\TransferService;
+use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use App\Services\TransferService;
-use App\Core\AppException;
 use Slim\Flash\Messages as FlashMessages;
-use Exception;
 
 class TransferController
 {
@@ -131,12 +131,12 @@ class TransferController
         $missingFields = [];
 
         foreach ($requiredFields as $field) {
-            if (!isset($data[$field])) {
+            if (! isset($data[$field])) {
                 $missingFields[] = $field;
             }
         }
 
-        if (!empty($missingFields)) {
+        if (! empty($missingFields)) {
             return [
                 'error' => 'Missing required fields',
                 'missing_fields' => $missingFields,
@@ -144,15 +144,15 @@ class TransferController
         }
 
         // Validações adicionais
-        if (!is_numeric($data['value']) || $data['value'] <= 0) {
+        if (! is_numeric($data['value']) || $data['value'] <= 0) {
             return ['error' => 'The "value" field must be a number greater than zero'];
         }
 
-        if (!is_numeric($data['payer']) || $data['payer'] <= 0) {
+        if (! is_numeric($data['payer']) || $data['payer'] <= 0) {
             return ['error' => 'The "payer" field must be a valid ID'];
         }
 
-        if (!is_numeric($data['payee']) || $data['payee'] <= 0) {
+        if (! is_numeric($data['payee']) || $data['payee'] <= 0) {
             return ['error' => 'The "payee" field must be a valid ID'];
         }
 

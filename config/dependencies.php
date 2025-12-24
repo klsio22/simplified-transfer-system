@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use Psr\Container\ContainerInterface;
-use Cycle\ORM\ORM;
-use Cycle\ORM\EntityManager;
-use Cycle\Database\DatabaseManager;
+use App\Repositories\UserRepository;
 use App\Services\AuthorizeService;
 use App\Services\NotifyService;
 use App\Services\TransferService;
-use App\Repositories\UserRepository;
+use Cycle\Database\DatabaseManager;
+use Cycle\ORM\EntityManager;
+use Cycle\ORM\ORM;
+use Psr\Container\ContainerInterface;
 use Slim\Flash\Messages;
 
 return [

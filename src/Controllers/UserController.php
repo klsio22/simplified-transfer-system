@@ -21,9 +21,10 @@ class UserController
         $body = (string) $request->getBody();
         $data = json_decode($body, true);
 
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             $payload = ['error' => true, 'message' => 'Dados inválidos'];
             $response->getBody()->write((string) json_encode($payload));
+
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
@@ -37,16 +38,17 @@ class UserController
             }
         }
 
-        if (!empty($data['email']) && !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+        if (! empty($data['email']) && ! filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = 'Invalid email';
         }
 
-        if (!empty($data['type']) && !in_array($data['type'], ['common', 'shopkeeper'], true)) {
+        if (! empty($data['type']) && ! in_array($data['type'], ['common', 'shopkeeper'], true)) {
             $errors['type'] = 'Invalid type (common|shopkeeper)';
         }
 
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             $response->getBody()->write((string) json_encode(['error' => true, 'errors' => $errors]));
+
             return $response->withHeader('Content-Type', 'application/json')->withStatus(422);
         }
 
@@ -57,6 +59,7 @@ class UserController
                 $this->flash->addMessage('error', 'CPF already registered');
             }
             $response->getBody()->write((string) json_encode($message));
+
             return $response->withHeader('Content-Type', 'application/json')->withStatus(422);
         }
 
@@ -66,6 +69,7 @@ class UserController
                 $this->flash->addMessage('error', 'Email already registered');
             }
             $response->getBody()->write((string) json_encode($message));
+
             return $response->withHeader('Content-Type', 'application/json')->withStatus(422);
         }
 
@@ -86,6 +90,7 @@ class UserController
 
         $payload = ['success' => true, 'id' => $id];
         $response->getBody()->write((string) json_encode($payload));
+
         return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
     }
 }
@@ -100,5 +105,6 @@ function camel_case(string $s): string
     foreach ($parts as $p) {
         $camel .= ucfirst($p);
     }
+
     return $camel;
 }

@@ -42,7 +42,7 @@ class NotifyService
             ])->wait(false); // false = não espera completar
         } catch (GuzzleException $e) {
             // Silent log - unstable notification service should not break transfer
-            if (!$this->silentMode) {
+            if (! $this->silentMode) {
                 error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());
             }
 
@@ -64,9 +64,10 @@ class NotifyService
 
             return isset($data['message']) && $data['message'] === 'Success';
         } catch (GuzzleException $e) {
-            if (!$this->silentMode) {
+            if (! $this->silentMode) {
                 error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());
             }
+
             return false;
         }
     }

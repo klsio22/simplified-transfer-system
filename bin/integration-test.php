@@ -5,10 +5,10 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use DI\ContainerBuilder;
-use Cycle\ORM\ORM;
-use Cycle\ORM\EntityManager;
 use App\Entity\User;
+use Cycle\ORM\EntityManager;
+use Cycle\ORM\ORM;
+use DI\ContainerBuilder;
 
 // Load environment
 if (file_exists(__DIR__ . '/../.env')) {
@@ -46,7 +46,13 @@ try {
     if (count($users) > 0) {
         echo "📋 Users in database:\n";
         foreach ($users as $user) {
-            echo "   - {$user->getId()}: {$user->getFullName()} ({$user->getEmail()}) | Balance: R$ {$user->getBalance()}\n";
+            echo sprintf(
+                "   - %s: %s (%s) | Balance: R$ %s\n",
+                $user->getId(),
+                $user->getFullName(),
+                $user->getEmail(),
+                $user->getBalance()
+            );
         }
     }
 

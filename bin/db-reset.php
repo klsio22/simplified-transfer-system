@@ -5,8 +5,8 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Cycle\ORM\EntityManager;
 use App\Entity\User;
+use Cycle\ORM\EntityManager;
 
 // Load environment
 if (file_exists(__DIR__ . '/../.env')) {

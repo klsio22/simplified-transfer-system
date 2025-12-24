@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
+use App\Controllers\BalanceController;
+use App\Controllers\TransferController;
+use App\Models\User;
+use App\Repositories\UserRepository;
 use PHPUnit\Framework\TestCase;
 use Slim\Factory\AppFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
-use Psr\Http\Message\ServerRequestInterface;
-use App\Models\User;
-use App\Controllers\TransferController;
-use App\Controllers\BalanceController;
-use App\Repositories\UserRepository;
 
 class EndpointsTest extends TestCase
 {
@@ -32,13 +31,14 @@ class EndpointsTest extends TestCase
 
             // stub HealthController for tests
             $c->set(\App\Controllers\HealthController::class, function () {
-                return new class {
+                return new class () {
                     public function hello(
                         \Psr\Http\Message\ServerRequestInterface $request,
                         \Psr\Http\Message\ResponseInterface $response
                     ) {
                         $data = ['message' => 'Hello, World!'];
                         $response->getBody()->write((string) json_encode($data));
+
                         return $response
                             ->withHeader('Content-Type', 'application/json')
                             ->withStatus(200);
@@ -66,6 +66,7 @@ class EndpointsTest extends TestCase
                         if ($id <= 0) {
                             $payload = ['error' => 'Invalid ID'];
                             $response->getBody()->write((string) json_encode($payload));
+
                             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
                         }
 
@@ -74,6 +75,7 @@ class EndpointsTest extends TestCase
                         if ($user === null) {
                             $payload = ['error' => 'User not found'];
                             $response->getBody()->write((string) json_encode($payload));
+
                             return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
                         }
 
@@ -84,6 +86,7 @@ class EndpointsTest extends TestCase
                         ];
 
                         $response->getBody()->write((string) json_encode($payload));
+
                         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
                     }
                 };
@@ -91,7 +94,7 @@ class EndpointsTest extends TestCase
 
             // stub UserRepository for balance tests
             $c->set(UserRepository::class, function () {
-                return new class {
+                return new class () {
                     public function find(int $id)
                     {
                         if ($id === 1) {
@@ -103,6 +106,7 @@ class EndpointsTest extends TestCase
                             $u->password = 'x';
                             $u->type = 'common';
                             $u->balance = 200.00;
+
                             return $u;
                         }
 
@@ -115,6 +119,7 @@ class EndpointsTest extends TestCase
                             $u->password = 'x';
                             $u->type = 'shopkeeper';
                             $u->balance = 0.00;
+
                             return $u;
                         }
 
@@ -125,7 +130,7 @@ class EndpointsTest extends TestCase
 
             // stub TransferService to simulate business rules without DB
             $c->set(\App\Services\TransferService::class, function () {
-                return new class {
+                return new class () {
                     public function transfer(int $payerId, int $payeeId, float $value): array
                     {
                         if ($value <= 0) {
@@ -193,7 +198,7 @@ class EndpointsTest extends TestCase
                             $data = (array) $data;
                         }
 
-                        if (!is_array($data)) {
+                        if (! is_array($data)) {
                             return $this->jsonResponse($response, ['error' => 'Invalid payload'], 400);
                         }
 
@@ -201,12 +206,12 @@ class EndpointsTest extends TestCase
                         $missingFields = [];
 
                         foreach ($requiredFields as $field) {
-                            if (!isset($data[$field])) {
+                            if (! isset($data[$field])) {
                                 $missingFields[] = $field;
                             }
                         }
 
-                        if (!empty($missingFields)) {
+                        if (! empty($missingFields)) {
                             return $this->jsonResponse($response, ['error' => 'Missing required fields'], 422);
                         }
 
@@ -216,9 +221,11 @@ class EndpointsTest extends TestCase
                                 (int) $data['payee'],
                                 (float) $data['value']
                             );
+
                             return $this->jsonResponse($response, $result, 200);
                         } catch (\Exception $e) {
                             $statusCode = ($e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
+
                             return $this->jsonResponse($response, ['error' => $e->getMessage()], $statusCode);
                         }
                     }
@@ -230,6 +237,7 @@ class EndpointsTest extends TestCase
                     ) {
 
                         $response->getBody()->write((string) json_encode($data));
+
                         return $response
                             ->withHeader('Content-Type', 'application/json')
                             ->withStatus($statusCode);
@@ -262,7 +270,7 @@ class EndpointsTest extends TestCase
         $request = $factory->createServerRequest($method, $path)
             ->withHeader('Content-Type', 'application/json');
 
-        if (!empty($data)) {
+        if (! empty($data)) {
             $request = $request->withParsedBody($data);
         }
 

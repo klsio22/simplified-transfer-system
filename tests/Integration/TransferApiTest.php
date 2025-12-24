@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Client;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Testes de integração do endpoint /transfer
@@ -16,6 +16,7 @@ class TransferApiTest extends TestCase
 {
     private Client $client;
     private string $baseUrl;
+
 
     protected function setUp(): void
     {

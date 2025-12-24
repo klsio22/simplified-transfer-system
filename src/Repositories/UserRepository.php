@@ -23,7 +23,7 @@ class UserRepository
         $stmt->execute([$id]);
         $data = $stmt->fetch();
 
-        if (!$data) {
+        if (! $data) {
             return null;
         }
 
@@ -39,7 +39,7 @@ class UserRepository
         $stmt->execute([$email]);
         $data = $stmt->fetch();
 
-        if (!$data) {
+        if (! $data) {
             return null;
         }
 
@@ -55,7 +55,7 @@ class UserRepository
         $stmt->execute([$cpf]);
         $data = $stmt->fetch();
 
-        if (!$data) {
+        if (! $data) {
             return null;
         }
 

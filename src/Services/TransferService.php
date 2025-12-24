@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Core\BusinessRuleException;
+use App\Core\InvalidTransferException;
+use App\Core\TransferException;
+use App\Core\TransferProcessingException;
+use App\Core\UnauthorizedException;
+use App\Core\UserNotFoundException;
 use App\Models\User;
 use App\Repositories\UserRepository;
-use App\Core\TransferException;
-use App\Core\UserNotFoundException;
-use App\Core\InvalidTransferException;
-use App\Core\BusinessRuleException;
-use App\Core\UnauthorizedException;
-use App\Core\TransferProcessingException;
-use PDOException;
 
 class TransferService
 {
@@ -41,11 +40,11 @@ class TransferService
         $payer = $this->userRepo->find($payerId);
         $payee = $this->userRepo->find($payeeId);
 
-        if (!$payer) {
+        if (! $payer) {
             throw new UserNotFoundException('Payer not found');
         }
 
-        if (!$payee) {
+        if (! $payee) {
             throw new UserNotFoundException('Payee not found');
         }
 
@@ -53,7 +52,7 @@ class TransferService
         $this->validateBusinessRules($payer, $value);
 
         // 4. Consulta serviço autorizador externo
-        if (!$this->authorizeService->isAuthorized()) {
+        if (! $this->authorizeService->isAuthorized()) {
             throw new UnauthorizedException('Transaction not authorized by authorization service');
         }
 
@@ -62,6 +61,7 @@ class TransferService
 
         // 6. Notifica recebedor (assíncrono, fora da transação)
         $notificationSent = false;
+
         try {
             $this->notifyService->notify($payeeId);
             $notificationSent = true;
@@ -105,7 +105,7 @@ class TransferService
         }
 
         // Verifica saldo suficiente
-        if (!$payer->hasSufficientBalance($value)) {
+        if (! $payer->hasSufficientBalance($value)) {
             throw new BusinessRuleException('Insufficient balance');
         }
     }
@@ -148,6 +148,7 @@ class TransferService
             $payee->balance = $originalPayeeBalance;
 
             error_log("Error during transfer transaction: " . $e->getMessage());
+
             throw new TransferProcessingException('Failed to process transfer. Please try again.');
         }
     }

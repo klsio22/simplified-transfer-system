@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Controllers\BalanceController;
-use App\Controllers\TransferController;
 use App\Models\User;
 use App\Repositories\UserRepository;
+use App\Services\UserService;
 use PHPUnit\Framework\TestCase;
 use Slim\Factory\AppFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
@@ -103,7 +102,7 @@ class EndpointsTest extends TestCase
                             $u->fullName = 'Usuário Comum';
                             $u->cpf = '123';
                             $u->email = 'comum@example.com';
-                            $u->password = 'x';
+                            $u->password = password_hash('test_password', PASSWORD_BCRYPT);
                             $u->type = 'common';
                             $u->balance = 200.00;
 
@@ -116,7 +115,7 @@ class EndpointsTest extends TestCase
                             $u->fullName = 'Loja ABC';
                             $u->cpf = '999';
                             $u->email = 'loja@example.com';
-                            $u->password = 'x';
+                            $u->password = password_hash('test_password', PASSWORD_BCRYPT);
                             $u->type = 'shopkeeper';
                             $u->balance = 0.00;
 
@@ -179,55 +178,62 @@ class EndpointsTest extends TestCase
                         \Psr\Http\Message\ServerRequestInterface $request,
                         \Psr\Http\Message\ResponseInterface $response
                     ) {
-
                         $data = $request->getParsedBody();
+                        $statusCode = 200;
+                        $payload = null;
 
+                        // Validate payload
                         if (
                             $data === null ||
                             (is_object($data) && (array)$data === []) ||
                             (is_array($data) && $data === [])
                         ) {
-                            return $this->jsonResponse(
-                                $response,
-                                ['error' => 'Invalid or empty payload'],
-                                422
-                            );
-                        }
-
-                        if (is_object($data)) {
+                            $statusCode = 422;
+                            $payload = ['error' => 'Invalid or empty payload'];
+                        } elseif (is_object($data)) {
                             $data = (array) $data;
+                            // Check if converted data is still valid
+                            if (! is_array($data)) {
+                                $statusCode = 400;
+                                $payload = ['error' => 'Invalid payload'];
+                            }
+                        } elseif (! is_array($data)) {
+                            $statusCode = 400;
+                            $payload = ['error' => 'Invalid payload'];
                         }
 
-                        if (! is_array($data)) {
-                            return $this->jsonResponse($response, ['error' => 'Invalid payload'], 400);
-                        }
+                        // Validate required fields if payload is valid so far
+                        if ($payload === null) {
+                            $requiredFields = ['value', 'payer', 'payee'];
+                            $missingFields = [];
 
-                        $requiredFields = ['value', 'payer', 'payee'];
-                        $missingFields = [];
+                            foreach ($requiredFields as $field) {
+                                if (! isset($data[$field])) {
+                                    $missingFields[] = $field;
+                                }
+                            }
 
-                        foreach ($requiredFields as $field) {
-                            if (! isset($data[$field])) {
-                                $missingFields[] = $field;
+                            if (! empty($missingFields)) {
+                                $statusCode = 422;
+                                $payload = ['error' => 'Missing required fields'];
                             }
                         }
 
-                        if (! empty($missingFields)) {
-                            return $this->jsonResponse($response, ['error' => 'Missing required fields'], 422);
+                        // Execute transfer if validation passed
+                        if ($payload === null) {
+                            try {
+                                $payload = $this->transferService->transfer(
+                                    (int) $data['payer'],
+                                    (int) $data['payee'],
+                                    (float) $data['value']
+                                );
+                            } catch (\Exception $e) {
+                                $statusCode = ($e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
+                                $payload = ['error' => $e->getMessage()];
+                            }
                         }
 
-                        try {
-                            $result = $this->transferService->transfer(
-                                (int) $data['payer'],
-                                (int) $data['payee'],
-                                (float) $data['value']
-                            );
-
-                            return $this->jsonResponse($response, $result, 200);
-                        } catch (\Exception $e) {
-                            $statusCode = ($e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
-
-                            return $this->jsonResponse($response, ['error' => $e->getMessage()], $statusCode);
-                        }
+                        return $this->jsonResponse($response, $payload, $statusCode);
                     }
 
                     private function jsonResponse(
@@ -245,6 +251,90 @@ class EndpointsTest extends TestCase
                 };
             });
 
+            // stub UserController for tests
+            $c->set(\App\Controllers\UserController::class, function () use ($c) {
+                return new class ($c->get(UserService::class)) {
+                    private $userService;
+                    public function __construct($userService)
+                    {
+                        $this->userService = $userService;
+                    }
+
+                    public function store(
+                        \Psr\Http\Message\ServerRequestInterface $request,
+                        \Psr\Http\Message\ResponseInterface $response
+                    ) {
+                        $body = (string) $request->getBody();
+                        $data = json_decode($body, true);
+
+                        if (! is_array($data)) {
+                            return $this->jsonResponse($response, ['error' => true, 'message' => 'Dados inválidos'], 400);
+                        }
+
+                        try {
+                            $result = $this->userService->createUser($data);
+                            return $this->jsonResponse($response, $result, 201);
+                        } catch (\App\Core\InvalidTransferException $e) {
+                            return $this->jsonResponse($response, ['error' => true, 'message' => $e->getMessage()], 422);
+                        } catch (\Exception $e) {
+                            return $this->jsonResponse($response, ['error' => true, 'message' => 'Internal server error'], 500);
+                        }
+                    }
+
+                    private function jsonResponse(
+                        \Psr\Http\Message\ResponseInterface $response,
+                        array $data,
+                        int $statusCode
+                    ) {
+                        $response->getBody()->write((string) json_encode($data));
+                        return $response
+                            ->withHeader('Content-Type', 'application/json')
+                            ->withStatus($statusCode);
+                    }
+                };
+            });
+
+            // stub UserService for user creation tests
+            $c->set(UserService::class, function () use ($c) {
+                return new class ($c->get(UserRepository::class)) {
+                    private $userRepository;
+                    public function __construct($userRepository)
+                    {
+                        $this->userRepository = $userRepository;
+                    }
+
+                    public function createUser(array $data): array
+                    {
+                        // Validate required fields
+                        $required = ['full_name', 'cpf', 'email', 'password', 'type'];
+                        foreach ($required as $field) {
+                            if (empty($data[$field] ?? null) && empty($data['fullName'] ?? null)) {
+                                throw new \App\Core\InvalidTransferException("{$field} is required");
+                            }
+                        }
+
+                        // Validate email format
+                        $email = $data['email'] ?? '';
+                        if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                            throw new \App\Core\InvalidTransferException('Invalid email format');
+                        }
+
+                        // Check for duplicate CPF (stub check - in real app uses DB)
+                        $cpf = $data['cpf'] ?? '';
+                        if ($cpf === '11111111111') {
+                            throw new \App\Core\InvalidTransferException('CPF already registered');
+                        }
+
+                        // Check for duplicate email (stub check - in real app uses DB)
+                        if ($email === 'duplicate@example.com') {
+                            throw new \App\Core\InvalidTransferException('Email already registered');
+                        }
+
+                        return ['success' => true, 'id' => 1];
+                    }
+                };
+            });
+
             return $c;
         })();
 
@@ -257,6 +347,7 @@ class EndpointsTest extends TestCase
         // register routes
         $app->get('/', [\App\Controllers\HealthController::class, 'hello']);
         $app->post('/transfer', [\App\Controllers\TransferController::class, 'transfer']);
+        $app->post('/users', [\App\Controllers\UserController::class, 'store']);
         $app->get('/balance/{id}', [\App\Controllers\BalanceController::class, 'show']);
 
         return $app;
@@ -271,7 +362,15 @@ class EndpointsTest extends TestCase
             ->withHeader('Content-Type', 'application/json');
 
         if (! empty($data)) {
-            $request = $request->withParsedBody($data);
+            // For POST requests with JSON body, use stream instead of parsed body
+            if ($method === 'POST') {
+                $stream = new \Slim\Psr7\Stream(fopen('php://memory', 'r+'));
+                $stream->write(json_encode($data));
+                $stream->rewind();
+                $request = $request->withBody($stream);
+            } else {
+                $request = $request->withParsedBody($data);
+            }
         }
 
         return $app->handle($request);
@@ -350,5 +449,79 @@ class EndpointsTest extends TestCase
     {
         $res = $this->request('POST', '/transfer', ['value' => 50.00, 'payer' => 999, 'payee' => 1]);
         $this->assertEquals(404, $res->getStatusCode());
+    }
+
+    public function testUsersCreateSuccess(): void
+    {
+        $res = $this->request('POST', '/users', [
+            'full_name' => 'John Doe',
+            'cpf' => '12345678900',
+            'email' => 'john@example.com',
+            'password' => 'password123',
+            'type' => 'common',
+        ]);
+        $this->assertEquals(201, $res->getStatusCode());
+        $body = json_decode((string) $res->getBody(), true);
+        $this->assertTrue($body['success']);
+        $this->assertArrayHasKey('id', $body);
+    }
+
+    public function testUsersCreateInvalidEmail(): void
+    {
+        $res = $this->request('POST', '/users', [
+            'full_name' => 'Jane Doe',
+            'cpf' => '98765432100',
+            'email' => 'invalid-email',
+            'password' => 'password123',
+            'type' => 'common',
+        ]);
+        $this->assertEquals(422, $res->getStatusCode());
+        $body = json_decode((string) $res->getBody(), true);
+        $this->assertTrue($body['error']);
+        $this->assertStringContainsString('Invalid email', $body['message']);
+    }
+
+    public function testUsersCreateDuplicateCpf(): void
+    {
+        $res = $this->request('POST', '/users', [
+            'full_name' => 'Bob Smith',
+            'cpf' => '11111111111',
+            'email' => 'bob@example.com',
+            'password' => 'password123',
+            'type' => 'common',
+        ]);
+        $this->assertEquals(422, $res->getStatusCode());
+        $body = json_decode((string) $res->getBody(), true);
+        $this->assertTrue($body['error']);
+        $this->assertStringContainsString('CPF already registered', $body['message']);
+    }
+
+    public function testUsersCreateDuplicateEmail(): void
+    {
+        $res = $this->request('POST', '/users', [
+            'full_name' => 'Alice Johnson',
+            'cpf' => '55555555555',
+            'email' => 'duplicate@example.com',
+            'password' => 'password123',
+            'type' => 'shopkeeper',
+        ]);
+        $this->assertEquals(422, $res->getStatusCode());
+        $body = json_decode((string) $res->getBody(), true);
+        $this->assertTrue($body['error']);
+        $this->assertStringContainsString('Email already registered', $body['message']);
+    }
+
+    public function testUsersCreateMissingField(): void
+    {
+        $res = $this->request('POST', '/users', [
+            'full_name' => 'Missing Email',
+            'cpf' => '66666666666',
+            'password' => 'password123',
+            'type' => 'common',
+        ]);
+        $this->assertEquals(422, $res->getStatusCode());
+        $body = json_decode((string) $res->getBody(), true);
+        $this->assertTrue($body['error']);
+        $this->assertStringContainsString('required', $body['message']);
     }
 }

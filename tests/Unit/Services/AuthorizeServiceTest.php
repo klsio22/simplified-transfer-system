@@ -10,7 +10,6 @@ use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
-use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 
 class AuthorizeServiceTest extends TestCase

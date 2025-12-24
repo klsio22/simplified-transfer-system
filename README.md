@@ -264,12 +264,6 @@ try {
 
 ---
 
-## 📄 Licença
-
-MIT License - Projeto open source de sistema de transferências simplificado.
-
----
-
 **Desenvolvido com ❤️ usando Slim 4 + Clean Architecture + 84 testes automatizados**
 
 ### Por que Slim Framework 4?
@@ -315,8 +309,6 @@ MIT License - Projeto open source de sistema de transferências simplificado.
 - **Escalável**: Worker pode ser escalado separadamente
 - **Retry**: Pode reprocessar falhas
 
-**Veja mais**: [ARCHITECTURE.md](ARCHITECTURE.md)
-
 ---
 
 ## 💡 Melhorias Futuras
@@ -330,21 +322,6 @@ MIT License - Projeto open source de sistema de transferências simplificado.
 ## 📌 Destaque - O que foi implementado
 
 ✔️ Todos os requisitos | ✔️ Clean Architecture | ✔️ SOLID + Design Patterns | ✔️ 84 testes + cobertura | ✔️ PHPStan 8 | ✔️ Docker ready | ✔️ Documentação completa
-
----
-
-## � Licença
-
-MIT License - Projeto open source de sistema de transferências simplificado.
-
-## 📖 Documentação Adicional
-
-- [📡 API](docs/API.md) - Endpoints, exemplos e respostas
-- [🏛️ Arquitetura](docs/ARCHITECTURE.md) - Decisões técnicas e padrões
-- [🚀 Melhorias](docs/IMPROVEMENTS.md) - Roadmap e features futuras
-- [🔧 Troubleshooting](docs/TROUBLESHOOTING.md) - Soluções de problemas comuns
-- [🤝 Contribuindo](CONTRIBUTING.md) - Como contribuir com o projeto
-- [📝 Changelog](CHANGELOG.md) - Histórico de mudanças
 
 ## 🛠️ Comandos Úteis Docker
 
@@ -370,3 +347,8 @@ docker compose down -v
 # Reiniciar apenas a aplicação
 docker compose restart app
 ```
+---
+
+## � Licença
+
+MIT License - Projeto open source de sistema de transferências simplificado.

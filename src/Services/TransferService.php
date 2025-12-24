@@ -117,6 +117,10 @@ class TransferService
     {
         $pdo = $this->userRepo->getPdo();
 
+        // Preserve original balances so we can restore in-memory state on failure
+        $originalPayerBalance = $payer->balance;
+        $originalPayeeBalance = $payee->balance;
+
         try {
             $pdo->beginTransaction();
 
@@ -129,8 +133,20 @@ class TransferService
             $this->userRepo->updateBalance($payee);
 
             $pdo->commit();
-        } catch (PDOException $e) {
-            $pdo->rollBack();
+        } catch (\Throwable $e) {
+            // Ensure DB is rolled back if a transaction is active
+            if ($pdo->inTransaction()) {
+                try {
+                    $pdo->rollBack();
+                } catch (\Throwable $rollEx) {
+                    error_log('Failed to roll back transaction: ' . $rollEx->getMessage());
+                }
+            }
+
+            // Restore in-memory balances so caller sees consistent state
+            $payer->balance = $originalPayerBalance;
+            $payee->balance = $originalPayeeBalance;
+
             error_log("Error during transfer transaction: " . $e->getMessage());
             throw new TransferProcessingException('Failed to process transfer. Please try again.');
         }

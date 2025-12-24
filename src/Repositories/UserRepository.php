@@ -113,7 +113,6 @@ class UserRepository
     {
         $user = new User();
         $user->id = (int) $data['id'];
-        // Support both 'fullName' and 'full_name' column naming
         $user->fullName = (string) ($data['fullName'] ?? $data['full_name'] ?? '');
         $user->cpf = $data['cpf'];
         $user->email = $data['email'];

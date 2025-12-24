@@ -28,8 +28,6 @@ class TransferApiTest extends TestCase
         $envBase = getenv('API_BASE_URL') ?: null;
         if ($envBase !== null && $envBase !== '') {
             $this->baseUrl = $envBase;
-        } elseif (file_exists('/.dockerenv')) {
-            $this->baseUrl = 'http://nginx:80';
         } else {
             $this->baseUrl = 'http://localhost:8080';
         }

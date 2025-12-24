@@ -129,23 +129,23 @@ class EndpointsTest extends TestCase
                     public function transfer(int $payerId, int $payeeId, float $value): array
                     {
                         if ($value <= 0) {
-                            throw new \Exception('Valor inválido', 422);
+                            throw new \App\Core\InvalidTransferException('Valor inválido');
                         }
 
                         if ($payerId === $payeeId) {
-                            throw new \Exception('Payer and payee must differ', 422);
+                            throw new \App\Core\InvalidTransferException('Payer and payee must differ');
                         }
 
                         if ($payerId === 4) {
-                            throw new \Exception('Lojistas não podem enviar transferências', 422);
+                            throw new \App\Core\BusinessRuleException('Lojistas não podem enviar transferências');
                         }
 
                         if ($payerId === 999 || $payeeId === 999) {
-                            throw new \Exception('User not found', 404);
+                            throw new \App\Core\UserNotFoundException('User not found');
                         }
 
                         if ($value > 1000) {
-                            throw new \Exception('Saldo insuficiente', 422);
+                            throw new \App\Core\BusinessRuleException('Saldo insuficiente');
                         }
 
                         // success

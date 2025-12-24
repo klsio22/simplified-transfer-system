@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Core\BusinessRuleException;
+use App\Core\InvalidTransferException;
+use App\Core\TransferException;
+use App\Core\TransferProcessingException;
+use App\Core\UnauthorizedException;
+use App\Core\UserNotFoundException;
 use App\Models\User;
 use App\Repositories\UserRepository;
-use PDOException;
-use Exception;
 
 class TransferService
 {
@@ -24,9 +28,10 @@ class TransferService
      * @param int $payerId ID do pagador (quem envia)
      * @param int $payeeId ID do recebedor (quem recebe)
      * @param float $value Valor a ser transferido
-     * @throws Exception Se a transferência falhar por qualquer motivo
+     * @return array<string,mixed> Resultado da transferência com informações de notificação
+     * @throws TransferException Se a transferência falhar por qualquer motivo
      */
-    public function transfer(int $payerId, int $payeeId, float $value): void
+    public function transfer(int $payerId, int $payeeId, float $value): array
     {
         // 1. Validações básicas
         $this->validateTransferData($payerId, $payeeId, $value);
@@ -35,32 +40,121 @@ class TransferService
         $payer = $this->userRepo->find($payerId);
         $payee = $this->userRepo->find($payeeId);
 
-        if (!$payer) {
-            throw new Exception('Payer not found', 404);
+        if (! $payer) {
+            throw new UserNotFoundException('Payer not found');
         }
 
-        if (!$payee) {
-            throw new Exception('Payee not found', 404);
+        if (! $payee) {
+            throw new UserNotFoundException('Payee not found');
         }
 
         // 3. Validações de regras de negócio
         $this->validateBusinessRules($payer, $value);
 
         // 4. Consulta serviço autorizador externo
-        if (!$this->authorizeService->isAuthorized()) {
-            throw new Exception('Transaction not authorized by authorization service', 422);
+        if (! $this->authorizeService->isAuthorized()) {
+            throw new UnauthorizedException('Transaction not authorized by authorization service');
         }
 
         // 5. Executa transferência dentro de transação
         $this->executeTransfer($payer, $payee, $value);
 
         // 6. Notifica recebedor (assíncrono, fora da transação)
+        $notificationSent = false;
+
         try {
             $this->notifyService->notify($payeeId);
-        } catch (Exception $e) {
+            $notificationSent = true;
+        } catch (TransferException $e) {
             // Notification failed, but transfer completed
             error_log("Failed to notify user {$payeeId}: " . $e->getMessage());
         }
+
+        return [
+            'success' => true,
+            'message' => 'Transfer completed successfully',
+            'value' => $value,
+            'payer_id' => $payerId,
+            'payee_id' => $payeeId,
+            'notification_sent' => $notificationSent,
+        ];
+    }
+
+    /**
+     * Processa e valida um payload bruto de transferência (usado por controllers)
+     *
+     * @param array<string,mixed>|object|null $raw
+     * @return array<string,mixed>
+     * @throws InvalidTransferException|BusinessRuleException|UserNotFoundException|UnauthorizedException|TransferProcessingException
+     */
+    public function processPayload(array|object|null $raw): array
+    {
+        if ($raw === null) {
+            throw new InvalidTransferException('Invalid or empty payload');
+        }
+
+        if (is_object($raw)) {
+            $raw = (array) $raw;
+        } elseif (! is_array($raw)) { // @phpstan-ignore-line
+            throw new InvalidTransferException('Invalid payload format');
+        }
+
+        // Validate required fields
+        $this->validatePayloadFields($raw);
+
+        // Extract and validate field values
+        ['payer' => $payerId, 'payee' => $payeeId, 'value' => $transferValue] = $this->extractAndValidateFields($raw);
+
+        // Delegate to transfer method (will perform business validations and DB operations)
+        return $this->transfer($payerId, $payeeId, $transferValue);
+    }
+
+    /**
+     * Validate that required fields exist in payload
+     *
+     * @param array<string, mixed> $raw
+     * @throws InvalidTransferException
+     */
+    private function validatePayloadFields(array $raw): void
+    {
+        $required = ['value', 'payer', 'payee'];
+        $missing = array_filter($required, fn ($field) => ! array_key_exists($field, $raw));
+        if (! empty($missing)) {
+            throw new InvalidTransferException('Missing required fields: ' . implode(', ', $missing));
+        }
+    }
+
+    /**
+     * Extract and validate individual field values
+     *
+     * @param array<string, mixed> $raw
+     * @return array{payer: int, payee: int, value: float}
+     * @throws InvalidTransferException
+     */
+    private function extractAndValidateFields(array $raw): array
+    {
+        $value = $raw['value'];
+        $payer = $raw['payer'];
+        $payee = $raw['payee'];
+
+        // Validate fields
+        if (! is_numeric($value) || (float)$value <= 0) {
+            throw new InvalidTransferException('The "value" field must be a number greater than zero');
+        }
+
+        if (! is_numeric($payer) || (int)$payer <= 0) {
+            throw new InvalidTransferException('The "payer" field must be a valid ID');
+        }
+
+        if (! is_numeric($payee) || (int)$payee <= 0) {
+            throw new InvalidTransferException('The "payee" field must be a valid ID');
+        }
+
+        return [
+            'payer' => (int)$payer,
+            'payee' => (int)$payee,
+            'value' => (float)$value,
+        ];
     }
 
     /**
@@ -69,11 +163,11 @@ class TransferService
     private function validateTransferData(int $payerId, int $payeeId, float $value): void
     {
         if ($value <= 0) {
-            throw new Exception('Transfer value must be greater than zero', 422);
+            throw new InvalidTransferException('Transfer value must be greater than zero');
         }
 
         if ($payerId === $payeeId) {
-            throw new Exception('Cannot transfer to yourself', 422);
+            throw new InvalidTransferException('Cannot transfer to yourself');
         }
     }
 
@@ -84,12 +178,12 @@ class TransferService
     {
         // Shopkeepers cannot send transfers
         if ($payer->isShopkeeper()) {
-            throw new Exception('Shopkeepers cannot perform transfers', 422);
+            throw new BusinessRuleException('Shopkeepers cannot perform transfers');
         }
 
         // Verifica saldo suficiente
-        if (!$payer->hasSufficientBalance($value)) {
-            throw new Exception('Insufficient balance', 422);
+        if (! $payer->hasSufficientBalance($value)) {
+            throw new BusinessRuleException('Insufficient balance');
         }
     }
 
@@ -99,6 +193,10 @@ class TransferService
     private function executeTransfer(User $payer, User $payee, float $value): void
     {
         $pdo = $this->userRepo->getPdo();
+
+        // Preserve original balances so we can restore in-memory state on failure
+        $originalPayerBalance = $payer->balance;
+        $originalPayeeBalance = $payee->balance;
 
         try {
             $pdo->beginTransaction();
@@ -112,10 +210,23 @@ class TransferService
             $this->userRepo->updateBalance($payee);
 
             $pdo->commit();
-        } catch (PDOException $e) {
-            $pdo->rollBack();
+        } catch (\Throwable $e) {
+            // Ensure DB is rolled back if a transaction is active
+            if ($pdo->inTransaction()) {
+                try {
+                    $pdo->rollBack();
+                } catch (\Throwable $rollEx) {
+                    error_log('Failed to roll back transaction: ' . $rollEx->getMessage());
+                }
+            }
+
+            // Restore in-memory balances so caller sees consistent state
+            $payer->balance = $originalPayerBalance;
+            $payee->balance = $originalPayeeBalance;
+
             error_log("Error during transfer transaction: " . $e->getMessage());
-            throw new Exception('Failed to process transfer. Please try again.', 500);
+
+            throw new TransferProcessingException('Failed to process transfer. Please try again.');
         }
     }
 }

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use Cycle\ORM;
-use Cycle\Schema;
 use Cycle\Annotated;
 use Cycle\Annotated\Locator\TokenizerEmbeddingLocator;
 use Cycle\Annotated\Locator\TokenizerEntityLocator;
+use Cycle\ORM;
+use Cycle\Schema;
 use Spiral\Tokenizer\ClassLocator;
 use Symfony\Component\Finder\Finder;
 

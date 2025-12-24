@@ -7,7 +7,7 @@ GET {{baseUrl}}/
 ###
 
 ### Balance - Get saldo usuário 1
-GET {{baseUrl}}/balance/24
+GET {{baseUrl}}/balance/25
 
 ###
 
@@ -120,8 +120,8 @@ Content-Type: {{contentType}}
 
 {
   "fullName": "Maria Oliveira fernades",
-  "cpf": "22233344455",
-  "email": "maria@example.com",
+  "cpf": "22233344453",
+  "email": "maria2@example.com",
   "password": "senha123",
   "type": "common"
 }
@@ -170,3 +170,91 @@ Content-Type: {{contentType}}
   "fullName": "Sem Campos",
   "cpf": "55566677788"
 }
+
+### Notify - Sucesso (payee usuário)
+POST https://util.devi.tools/api/v1/notify
+Content-Type: application/json
+
+{
+  "user_id": 24
+}
+
+### Notify - Sucesso (payee lojista)
+POST https://util.devi.tools/api/v1/notify
+Content-Type: application/json
+
+{
+  "user_id": 26
+}
+
+### Notify - Falha - Payload inválido (sem user_id)
+POST https://util.devi.tools/api/v1/notify
+Content-Type: application/json
+
+{}
+
+###
+
+### Notify - Sucesso - Notificação após transfer bem-sucedida (usuário comum)
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": 15.00,
+  "payer": 30,
+  "payee": 31
+}
+
+###
+
+### Notify - Sucesso - Notificação após transfer bem-sucedida (lojista recebe)
+POST {{baseUrl}}/transfer
+Content-Type: {{contentType}}
+
+{
+  "value": 25.00,
+  "payer": 25,
+  "payee": 26
+}
+
+###
+
+### Notify - Teste Mock Service Simulando 503 (Indisponível)
+POST https://httpstat.us/503
+Content-Type: application/json
+
+{
+  "user_id": 24
+}
+
+###
+
+### Notify - Teste Mock Service Simulando Timeout
+POST https://httpstat.us/200?sleep=6000
+Content-Type: application/json
+
+{
+  "user_id": 24
+}
+
+###
+
+### Notify - Teste Mock Service com Erro 400
+POST https://util.devi.tools/api/v1/notify
+Content-Type: application/json
+
+{
+  "user_id": "invalid"
+}
+
+###
+
+### Notify - Teste Mock Service com Campo Extra (Robustez)
+POST https://util.devi.tools/api/v1/notify
+Content-Type: application/json
+
+{
+  "user_id": 24,
+  "extra_field": "should_be_ignored"
+}
+

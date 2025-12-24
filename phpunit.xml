@@ -1,27 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
-         bootstrap="vendor/autoload.php"
-         colors="true"
-         beStrictAboutOutputDuringTests="true"
-         cacheDirectory="vendor/.phpunit.cache">
-    <testsuites>
-        <testsuite name="Unit">
-            <directory>tests/Unit</directory>
-        </testsuite>
-        <testsuite name="Integration">
-            <exclude>tests/Integration</exclude>
-        </testsuite>
-    </testsuites>
-
-    <source>
-        <include>
-            <directory>src</directory>
-        </include>
-    </source>
-
+  xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+  colors="true" cacheDirectory=".cache/phpunit"
+  displayDetailsOnTestsThatTriggerWarnings="true">
     <php>
-        <env name="APP_ENV" value="testing"/>
-        <env name="API_BASE_URL" value="http://localhost:8080"/>
+        <env name="APP_ENV" value="testing" />
+        <env name="DB_HOST" value="mysql" />
+        <env name="DB_PORT" value="3306" />
+        <env name="DB_DATABASE" value="simplified_transfer" />
+        <env name="DB_USERNAME" value="transfer_user" />
+        <env name="DB_PASSWORD" value="transfer_pass" />
     </php>
 </phpunit>

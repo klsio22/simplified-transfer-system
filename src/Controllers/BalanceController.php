@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Core\AppException;
+use App\Services\BalanceService;
 use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
-use App\Repositories\UserRepository;
 
 class BalanceController
 {
-    public function __construct(private UserRepository $userRepository)
+    public function __construct(private BalanceService $balanceService)
     {
     }
 
@@ -19,34 +19,38 @@ class BalanceController
      *
      * @param array<string,mixed> $args
      */
-    public function show(Request $request, Response $response, array $args): Response
+    public function show(Response $response, array $args): Response
     {
-        $id = (int) ($args['id'] ?? 0);
+        $userId = $args['id'] ?? null;
 
-        if ($id <= 0) {
-            $payload = ['error' => 'Invalid ID'];
-            $response->getBody()->write((string) json_encode($payload));
+        try {
+            $user = $this->balanceService->getBalance($userId);
 
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            $payload = [
+                'id' => $user->getId(),
+                'fullName' => $user->getFullName(),
+                'balance' => (float) $user->getBalance(),
+            ];
+
+            return $this->jsonResponse($response, $payload, 200);
+        } catch (AppException $e) {
+            return $this->jsonResponse($response, ['error' => $e->getMessage()], $e->getStatusCode());
+        } catch (\Throwable $e) {
+            error_log('Unexpected error in balance controller: ' . $e->getMessage());
+
+            return $this->jsonResponse($response, ['error' => 'Internal server error'], 500);
         }
+    }
 
-        $user = $this->userRepository->find($id);
+    /**
+     * @param array<string,mixed> $data
+     */
+    private function jsonResponse(Response $response, array $data, int $statusCode): Response
+    {
+        $response->getBody()->write((string) json_encode($data));
 
-        if ($user === null) {
-            $payload = ['error' => 'User not found'];
-            $response->getBody()->write((string) json_encode($payload));
-
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
-        }
-
-        $payload = [
-            'id' => $user->getId(),
-            'fullName' => $user->getFullName(),
-            'balance' => (float) $user->getBalance(),
-        ];
-
-        $response->getBody()->write((string) json_encode($payload));
-
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus($statusCode);
     }
 }

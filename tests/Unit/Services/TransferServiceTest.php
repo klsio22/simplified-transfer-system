@@ -10,8 +10,8 @@ use App\Services\AuthorizeService;
 use App\Services\NotifyService;
 use App\Services\TransferService;
 use Exception;
-use PHPUnit\Framework\TestCase;
 use PDO;
+use PHPUnit\Framework\TestCase;
 
 class TransferServiceTest extends TestCase
 {

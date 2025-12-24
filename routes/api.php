@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Controllers\TransferController;
-use App\Controllers\HealthController;
 use App\Controllers\BalanceController;
+use App\Controllers\HealthController;
+use App\Controllers\TransferController;
 use App\Controllers\UserController;
 
 /** @var \Slim\App $app */

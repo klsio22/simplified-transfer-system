@@ -23,7 +23,7 @@ class UserRepository
         $stmt->execute([$id]);
         $data = $stmt->fetch();
 
-        if (!$data) {
+        if (! $data) {
             return null;
         }
 
@@ -39,7 +39,7 @@ class UserRepository
         $stmt->execute([$email]);
         $data = $stmt->fetch();
 
-        if (!$data) {
+        if (! $data) {
             return null;
         }
 
@@ -55,7 +55,7 @@ class UserRepository
         $stmt->execute([$cpf]);
         $data = $stmt->fetch();
 
-        if (!$data) {
+        if (! $data) {
             return null;
         }
 
@@ -77,7 +77,7 @@ class UserRepository
     public function create(User $user): int
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO users (full_name, cpf, email, password, type, balance) 
+            "INSERT INTO users (full_name, cpf, email, password, type, balance)
              VALUES (?, ?, ?, ?, ?, ?)"
         );
 
@@ -113,7 +113,6 @@ class UserRepository
     {
         $user = new User();
         $user->id = (int) $data['id'];
-        // Support both 'fullName' and 'full_name' column naming
         $user->fullName = (string) ($data['fullName'] ?? $data['full_name'] ?? '');
         $user->cpf = $data['cpf'];
         $user->email = $data['email'];

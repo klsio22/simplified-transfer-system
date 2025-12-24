@@ -36,3 +36,7 @@ composer.lock
 # Build
 /build/
 /dist/
+
+.cache
+.phpunit.cache
+.php-cs-fixer.cache

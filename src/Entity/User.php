@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use Cycle\Annotated\Annotation\Entity;
 use Cycle\Annotated\Annotation\Column;
+use Cycle\Annotated\Annotation\Entity;
 use Cycle\Annotated\Annotation\Relation\HasMany;
 use DateTimeImmutable;
 
@@ -42,16 +42,16 @@ class User
     private ?DateTimeImmutable $updatedAt = null;
 
     // Relations
-    /** @var array<int, \App\Entity\Transfer> */
+    /** @var array<int, Transfer> */
     #[HasMany(target: Transfer::class, outerKey: 'payerId')]
     private array $payedTransfers = [];
 
-    /** @var array<int, \App\Entity\Transfer> */
+    /** @var array<int, Transfer> */
     #[HasMany(target: Transfer::class, outerKey: 'payeeId')]
     private array $receivedTransfers = [];
 
     /**
-     * @return array<int, \App\Entity\Transfer>
+     * @return array<int, Transfer>
      */
     public function getPayedTransfers(): array
     {
@@ -59,7 +59,7 @@ class User
     }
 
     /**
-     * @return array<int, \App\Entity\Transfer>
+     * @return array<int, Transfer>
      */
     public function getReceivedTransfers(): array
     {
@@ -122,36 +122,42 @@ class User
     public function setFullName(string $fullName): self
     {
         $this->fullName = $fullName;
+
         return $this;
     }
 
     public function setCpf(string $cpf): self
     {
         $this->cpf = $cpf;
+
         return $this;
     }
 
     public function setEmail(string $email): self
     {
         $this->email = $email;
+
         return $this;
     }
 
     public function setPassword(string $password): self
     {
         $this->password = $password;
+
         return $this;
     }
 
     public function setType(string $type): self
     {
         $this->type = $type;
+
         return $this;
     }
 
     public function setBalance(float $balance): self
     {
         $this->balance = $balance;
+
         return $this;
     }
 
@@ -188,12 +194,14 @@ class User
     public function debit(float $amount): self
     {
         $this->balance -= $amount;
+
         return $this;
     }
 
     public function credit(float $amount): self
     {
         $this->balance += $amount;
+
         return $this;
     }
 }

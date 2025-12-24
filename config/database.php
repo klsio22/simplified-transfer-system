@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Cycle\Database\DatabaseManager;
 use Cycle\Database\Config;
+use Cycle\Database\DatabaseManager;
 
 // Load environment
 if (file_exists(__DIR__ . '/../.env')) {
@@ -12,8 +12,8 @@ if (file_exists(__DIR__ . '/../.env')) {
 
 return new DatabaseManager(
     new Config\DatabaseConfig([
-        'default'     => 'default',
-        'databases'   => [
+        'default' => 'default',
+        'databases' => [
             'default' => ['connection' => 'mysql'],
         ],
         'connections' => [

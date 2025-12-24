@@ -1,0 +1,96 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+
+source .env
+
+function ps {
+    docker compose ps
+}
+
+function up {
+    docker compose up -d "${@}"
+}
+
+function down {
+    docker compose down "${@}"
+}
+
+function composer {
+    docker run --rm --interactive \
+        -e COMPOSER_CACHE_DIR="/app/.cache/composer" \
+        -u "$(id -u):$(id -g)" -v "$(pwd):/app" \
+        -w /app composer:2.7.2 composer "${@}"
+}
+
+function nginx:check {
+    docker compose exec nginx nginx -t
+}
+
+function nginx:status {
+    docker compose exec nginx service nginx status
+}
+
+function nginx:reload {
+    docker compose exec web nginx -s reload
+}
+
+function test {
+    TEST_PATH="${@:-tests}"
+    docker compose exec app ./vendor/bin/phpunit --colors ${TEST_PATH}
+}
+
+function phpcs {
+    TEST_PATH="${@:-.}"
+    ./vendor/bin/phpcs --standard=.phpcs.xml src tests ${TEST_PATH}
+}
+
+function phpcbf {
+    TEST_PATH="${@:-.}"
+        ./vendor/bin/phpcbf ${TEST_PATH}
+}
+
+function phpstan {
+    TEST_PATH="${@:-}"
+    ./vendor/bin/phpstan analyse --memory-limit 1G ${TEST_PATH}
+}
+
+function phpfmt {
+    TEST_PATH="${@:-.}"
+    ./vendor/bin/php-cs-fixer fix ${TEST_PATH}
+}
+
+function phpmd {
+    TEST_PATH="${@:-.}"
+   ./vendor/bin/phpmd src text cleancode,codesize,controversial,design,naming,unusedcode
+}
+
+function phpfullcheck {
+    # aplicar correções automáticas
+    phpcbf
+    phpfmt
+
+    # checagens de estilo/estáticas
+    phpcs
+    phpstan
+    phpmd
+
+    # rodar testes (usa docker exec conforme função test)
+    test
+}
+
+function db:reset {
+   docker compose exec app php /var/www/html/bin/db-reset.php
+}
+
+function db:crud {
+   docker compose exec app php /var/www/html/bin/db-crud.php
+}
+
+function db:integration {
+    docker compose exec app php /var/www/html/bin/db-integration.php
+}
+
+TIMEFORMAT=$'\nTask completed in %3lR'
+time ${@}

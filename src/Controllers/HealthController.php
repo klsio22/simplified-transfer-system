@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
 
 class HealthController
 {
@@ -13,7 +12,7 @@ class HealthController
      * Endpoint GET /hello
      * Health check simples
      */
-    public function hello(Request $request, Response $response): Response
+    public function hello(Response $response): Response
     {
         $data = [
             'message' => 'Hello, World!',

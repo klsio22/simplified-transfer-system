@@ -5,8 +5,8 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Cycle\ORM\EntityManager;
 use App\Entity\User;
+use Cycle\ORM\EntityManager;
 
 // Load environment
 if (file_exists(__DIR__ . '/../.env')) {
@@ -83,7 +83,6 @@ try {
 
     echo "\n✅ Database reset complete!\n";
     echo "   Created 3 test users\n";
-
 } catch (Exception $e) {
     echo "❌ Error: " . $e->getMessage() . "\n";
     echo $e->getTraceAsString() . "\n";

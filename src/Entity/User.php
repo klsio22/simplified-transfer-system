@@ -41,7 +41,6 @@ class User
     /** @phpstan-ignore-next-line */
     private ?DateTimeImmutable $updatedAt = null;
 
-    // Relations
     /** @var array<int, Transfer> */
     #[HasMany(target: Transfer::class, outerKey: 'payerId')]
     private array $payedTransfers = [];
@@ -65,10 +64,6 @@ class User
     {
         return $this->receivedTransfers;
     }
-
-    // ============================================
-    // Getters
-    // ============================================
 
     public function getId(): int
     {
@@ -115,10 +110,6 @@ class User
         return $this->updatedAt;
     }
 
-    // ============================================
-    // Setters
-    // ============================================
-
     public function setFullName(string $fullName): self
     {
         $this->fullName = $fullName;
@@ -161,20 +152,12 @@ class User
         return $this;
     }
 
-    // ============================================
-    // Initialization
-    // ============================================
-
     public function ensureCreatedAt(): void
     {
         if ($this->createdAt === null) {
             $this->createdAt = new DateTimeImmutable();
         }
     }
-
-    // ============================================
-    // Business Logic
-    // ============================================
 
     public function isShopkeeper(): bool
     {

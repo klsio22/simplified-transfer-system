@@ -19,11 +19,6 @@ class AuthorizeService
         ]);
     }
 
-    /**
-     *
-     * Returns true immediately when SKIP_AUTH=1 or APP_ENV=testing to
-     * allow running tests without depending on external service.
-     */
     public function isAuthorized(): bool
     {
 

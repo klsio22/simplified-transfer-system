@@ -48,8 +48,6 @@ class TransferController
     }
 
     /**
-     * Extract raw parsed body from the request.
-     *
      * @return array<string,mixed>|object|null
      */
     private function extractRequestData(Request $request): array|object|null
@@ -58,8 +56,6 @@ class TransferController
     }
 
     /**
-     * Helper para criar respostas JSON
-     *
      * @param array<string,mixed> $data
      */
     private function jsonResponse(Response $response, array $data, int $statusCode): Response

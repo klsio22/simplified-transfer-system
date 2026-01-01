@@ -36,16 +36,11 @@ class Transfer
     /** @phpstan-ignore-next-line */
     private ?DateTimeImmutable $updatedAt = null;
 
-    // Relations
     #[BelongsTo(target: User::class, outerKey: 'id', innerKey: 'payerId')]
     private ?User $payer = null;
 
     #[BelongsTo(target: User::class, outerKey: 'id', innerKey: 'payeeId')]
     private ?User $payee = null;
-
-    // ============================================
-    // Getters
-    // ============================================
 
     public function getId(): int
     {
@@ -92,10 +87,6 @@ class Transfer
         return $this->updatedAt;
     }
 
-    // ============================================
-    // Setters
-    // ============================================
-
     public function setPayerId(int $payerId): self
     {
         $this->payerId = $payerId;
@@ -139,10 +130,6 @@ class Transfer
 
         return $this;
     }
-
-    // ============================================
-    // Business Logic
-    // ============================================
 
     public function isPending(): bool
     {

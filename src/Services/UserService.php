@@ -15,18 +15,14 @@ class UserService
     }
 
     /**
-     * Cria um novo usuário com validações
-     *
      * @param array<string,mixed> $data
      * @return array<string,int|bool>
      * @throws InvalidTransferException
      */
     public function createUser(array $data): array
     {
-        // Validate field format and uniqueness
         $this->validateUserData($data);
 
-        // Create and persist user
         $user = $this->buildUserFromData($data);
         $userId = $this->userRepository->create($user);
 
@@ -34,8 +30,6 @@ class UserService
     }
 
     /**
-     * Validate user data format and uniqueness constraints
-     *
      * @param array<string,mixed> $data
      * @throws InvalidTransferException
      */
@@ -52,7 +46,6 @@ class UserService
             throw new InvalidTransferException($errorJson);
         }
 
-        // Validate uniqueness constraints
         if ($this->userRepository->findByCpf((string)$data['cpf']) !== null) {
             throw new InvalidTransferException('CPF already registered');
         }
@@ -63,8 +56,6 @@ class UserService
     }
 
     /**
-     * Collect validation errors for required fields and formats
-     *
      * @param array<string,mixed> $data
      * @return array<string,string>
      */
@@ -79,12 +70,10 @@ class UserService
             }
         }
 
-        // Validate email format
         if (! empty($data['email']) && ! filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = 'Invalid email';
         }
 
-        // Validate type field
         if (! empty($data['type']) && ! in_array($data['type'], ['common', 'shopkeeper'], true)) {
             $errors['type'] = 'Invalid type (common|shopkeeper)';
         }
@@ -93,8 +82,6 @@ class UserService
     }
 
     /**
-     * Build a User object from request data
-     *
      * @param array<string,mixed> $data
      */
     private function buildUserFromData(array $data): User
@@ -110,9 +97,6 @@ class UserService
         return $user;
     }
 
-    /**
-     * Convert snake_case to camelCase
-     */
     private function toCamelCase(string $snakeCase): string
     {
         $parts = explode('_', $snakeCase);

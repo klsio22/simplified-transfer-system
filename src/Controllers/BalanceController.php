@@ -15,8 +15,6 @@ class BalanceController
     }
 
     /**
-     * GET /balance/{id}
-     *
      * @param array<string,mixed> $args
      */
     public function show(Response $response, array $args): Response

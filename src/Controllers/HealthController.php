@@ -8,10 +8,6 @@ use Psr\Http\Message\ResponseInterface as Response;
 
 class HealthController
 {
-    /**
-     * Endpoint GET /hello
-     * Health check simples
-     */
     public function hello(Response $response): Response
     {
         $data = [

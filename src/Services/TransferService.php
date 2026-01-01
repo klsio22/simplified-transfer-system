@@ -23,20 +23,12 @@ class TransferService
     }
 
     /**
-     * Realiza transferência entre usuários
-     *
-     * @param int $payerId ID do pagador (quem envia)
-     * @param int $payeeId ID do recebedor (quem recebe)
-     * @param float $value Valor a ser transferido
-     * @return array<string,mixed> Resultado da transferência com informações de notificação
-     * @throws TransferException Se a transferência falhar por qualquer motivo
+     * @return array<string,mixed>
      */
     public function transfer(int $payerId, int $payeeId, float $value): array
     {
-        // 1. Validações básicas
         $this->validateTransferData($payerId, $payeeId, $value);
 
-        // 2. Busca usuários
         $payer = $this->userRepo->find($payerId);
         $payee = $this->userRepo->find($payeeId);
 
@@ -48,18 +40,14 @@ class TransferService
             throw new UserNotFoundException('Payee not found');
         }
 
-        // 3. Validações de regras de negócio
         $this->validateBusinessRules($payer, $value);
 
-        // 4. Consulta serviço autorizador externo
         if (! $this->authorizeService->isAuthorized()) {
             throw new UnauthorizedException('Transaction not authorized by authorization service');
         }
 
-        // 5. Executa transferência dentro de transação
         $this->executeTransfer($payer, $payee, $value);
 
-        // 6. Notifica recebedor (assíncrono, fora da transação)
         $notificationSent = false;
 
         try {
@@ -81,11 +69,8 @@ class TransferService
     }
 
     /**
-     * Processa e valida um payload bruto de transferência (usado por controllers)
-     *
      * @param array<string,mixed>|object|null $raw
      * @return array<string,mixed>
-     * @throws InvalidTransferException|BusinessRuleException|UserNotFoundException|UnauthorizedException|TransferProcessingException
      */
     public function processPayload(array|object|null $raw): array
     {
@@ -99,19 +84,14 @@ class TransferService
             throw new InvalidTransferException('Invalid payload format');
         }
 
-        // Validate required fields
         $this->validatePayloadFields($raw);
 
-        // Extract and validate field values
         ['payer' => $payerId, 'payee' => $payeeId, 'value' => $transferValue] = $this->extractAndValidateFields($raw);
 
-        // Delegate to transfer method (will perform business validations and DB operations)
         return $this->transfer($payerId, $payeeId, $transferValue);
     }
 
     /**
-     * Validate that required fields exist in payload
-     *
      * @param array<string, mixed> $raw
      * @throws InvalidTransferException
      */
@@ -125,8 +105,6 @@ class TransferService
     }
 
     /**
-     * Extract and validate individual field values
-     *
      * @param array<string, mixed> $raw
      * @return array{payer: int, payee: int, value: float}
      * @throws InvalidTransferException
@@ -137,7 +115,6 @@ class TransferService
         $payer = $raw['payer'];
         $payee = $raw['payee'];
 
-        // Validate fields
         if (! is_numeric($value) || (float)$value <= 0) {
             throw new InvalidTransferException('The "value" field must be a number greater than zero');
         }
@@ -181,7 +158,6 @@ class TransferService
             throw new BusinessRuleException('Shopkeepers cannot perform transfers');
         }
 
-        // Verifica saldo suficiente
         if (! $payer->hasSufficientBalance($value)) {
             throw new BusinessRuleException('Insufficient balance');
         }
@@ -201,17 +177,14 @@ class TransferService
         try {
             $pdo->beginTransaction();
 
-            // Debita do pagador
             $payer->balance -= $value;
             $this->userRepo->updateBalance($payer);
 
-            // Credita ao recebedor
             $payee->balance += $value;
             $this->userRepo->updateBalance($payee);
 
             $pdo->commit();
         } catch (\Throwable $e) {
-            // Ensure DB is rolled back if a transaction is active
             if ($pdo->inTransaction()) {
                 try {
                     $pdo->rollBack();
@@ -220,7 +193,6 @@ class TransferService
                 }
             }
 
-            // Restore in-memory balances so caller sees consistent state
             $payer->balance = $originalPayerBalance;
             $payee->balance = $originalPayeeBalance;
 

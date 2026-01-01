@@ -14,9 +14,6 @@ class UserRepository
     ) {
     }
 
-    /**
-     * Busca um usuário pelo ID
-     */
     public function find(int $id): ?User
     {
         $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = ?");
@@ -30,9 +27,6 @@ class UserRepository
         return $this->hydrate($data);
     }
 
-    /**
-     * Busca um usuário pelo email
-     */
     public function findByEmail(string $email): ?User
     {
         $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ?");
@@ -46,9 +40,6 @@ class UserRepository
         return $this->hydrate($data);
     }
 
-    /**
-     * Busca um usuário pelo CPF
-     */
     public function findByCpf(string $cpf): ?User
     {
         $stmt = $this->pdo->prepare("SELECT * FROM users WHERE cpf = ?");
@@ -62,18 +53,12 @@ class UserRepository
         return $this->hydrate($data);
     }
 
-    /**
-     * Atualiza o saldo de um usuário
-     */
     public function updateBalance(User $user): void
     {
         $stmt = $this->pdo->prepare("UPDATE users SET balance = ? WHERE id = ?");
         $stmt->execute([$user->balance, $user->id]);
     }
 
-    /**
-     * Cria um novo usuário
-     */
     public function create(User $user): int
     {
         $stmt = $this->pdo->prepare(
@@ -93,9 +78,6 @@ class UserRepository
         return (int) $this->pdo->lastInsertId();
     }
 
-    /**
-     * Retorna o PDO para transações
-     */
     public function getPdo(): PDO
     {
         return $this->pdo;

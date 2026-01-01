@@ -33,8 +33,6 @@ class UserController
     }
 
     /**
-     * Handle user creation logic with error handling
-     *
      * @param array<string,mixed> $data
      * @return array{responseData: array<string,mixed>, statusCode: int}
      */

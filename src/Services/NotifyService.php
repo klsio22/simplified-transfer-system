@@ -27,32 +27,19 @@ class NotifyService
         ]);
     }
 
-    /**
-     * Envia notificação ao usuário recebedor (payee)
-     *
-     * Executa de forma assíncrona para não bloquear a transferência
-     * Em produção, isso deveria usar uma fila real (Redis, RabbitMQ, etc)
-     */
     public function notify(int $payeeId): void
     {
         try {
-            // Fire-and-forget: não espera resposta e não bloqueia
             $this->client->postAsync($this->endpoint, [
                 'json' => ['user_id' => $payeeId],
-            ])->wait(false); // false = não espera completar
+            ])->wait(false);
         } catch (GuzzleException $e) {
-            // Silent log - unstable notification service should not break transfer
             if (! $this->silentMode) {
                 error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());
             }
-
-            // In production: enqueue for retry or dead letter
         }
     }
 
-    /**
-     * Versão síncrona para testes
-     */
     public function notifySync(int $payeeId): bool
     {
         try {

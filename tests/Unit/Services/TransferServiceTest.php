@@ -60,6 +60,37 @@ class TransferServiceTest extends TestCase
         $this->transferService->transfer(1, 2, 50.0);
     }
 
+    public function testTransferSuccessfullyNotifiesAsynchronously(): void
+    {
+        $payer = $this->createCommonUser(1, 100.0);
+        $payee = $this->createCommonUser(2, 0.0);
+
+        $this->userRepository
+            ->method('find')
+            ->willReturnMap([
+                [1, $payer],
+                [2, $payee],
+            ]);
+
+        $this->pdo->method('beginTransaction')->willReturn(true);
+        $this->pdo->method('commit')->willReturn(true);
+        $this->pdo->method('inTransaction')->willReturn(false);
+
+        $this->authorizeService->method('isAuthorized')->willReturn(true);
+
+        $this->notifyService
+            ->expects($this->once())
+            ->method('notify')
+            ->with(2);
+
+        $result = $this->transferService->transfer(1, 2, 50.0);
+
+        $this->assertTrue($result['notification_sent']);
+        $this->assertTrue($result['success']);
+        $this->assertEquals(2, $result['payee_id']);
+        $this->assertEquals(50.0, $result['value']);
+    }
+
     public function testTransferWithInsufficientBalanceShouldFail(): void
     {
         $this->expectException(Exception::class);

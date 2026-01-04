@@ -22,21 +22,11 @@ class NotifyServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        // Ensure APP_ENV is set for proper endpoint detection
         putenv('APP_ENV=testing');
 
         $this->mockClient = $this->createMock(Client::class);
 
-        $this->notifyService = new NotifyService(true);
-
-        $reflection = new \ReflectionClass(NotifyService::class);
-        $property = $reflection->getProperty('client');
-
-        // Remove this line completely — it's deprecated and does nothing in PHP 8.1+
-        // $property->setAccessible(true);
-
-        $property->setValue($this->notifyService, $this->mockClient);
+        $this->notifyService = new NotifyService(true, $this->mockClient);
     }
 
     /**
@@ -44,7 +34,6 @@ class NotifyServiceTest extends TestCase
      */
     public function testNotifySyncSuccess(): void
     {
-        // Mock successful response
         $mockResponse = $this->createMock(ResponseInterface::class);
         $mockResponse->method('getBody')->willReturn(
             Utils::streamFor(json_encode(['message' => 'Success']))
@@ -62,7 +51,6 @@ class NotifyServiceTest extends TestCase
      */
     public function testNotifySyncFailure(): void
     {
-        // Mock failed response
         $mockResponse = $this->createMock(ResponseInterface::class);
         $mockResponse->method('getBody')->willReturn(
             Utils::streamFor(json_encode(['message' => 'Failed']))
@@ -80,7 +68,6 @@ class NotifyServiceTest extends TestCase
      */
     public function testNotifySyncEmptyResponse(): void
     {
-        // Mock empty response
         $mockResponse = $this->createMock(ResponseInterface::class);
         $mockResponse->method('getBody')->willReturn(Utils::streamFor(json_encode([])));
 
@@ -132,7 +119,6 @@ class NotifyServiceTest extends TestCase
     {
         $request = new Request('POST', NotifyService::ENDPOINT);
 
-        // Mock postAsync that throws
         $mockPromise = $this->createMock(\GuzzleHttp\Promise\PromiseInterface::class);
         $mockPromise->method('wait')
             ->willThrowException(
@@ -141,10 +127,9 @@ class NotifyServiceTest extends TestCase
 
         $this->mockClient->method('postAsync')->willReturn($mockPromise);
 
-        // Should not throw, just log
         $this->notifyService->notify(24);
 
-        $this->assertTrue(true); // If we get here, no exception was thrown
+        $this->assertTrue(true);
     }
 
     /**
@@ -157,11 +142,9 @@ class NotifyServiceTest extends TestCase
 
         $this->mockClient->method('post')->willReturn($mockResponse);
 
-        // Test with common user
         $result1 = $this->notifyService->notifySync(24);
         $this->assertTrue($result1);
 
-        // Test with shopkeeper
         $result2 = $this->notifyService->notifySync(26);
         $this->assertTrue($result2);
     }
@@ -174,7 +157,6 @@ class NotifyServiceTest extends TestCase
         $mockResponse = $this->createMock(ResponseInterface::class);
         $mockResponse->method('getBody')->willReturn(Utils::streamFor(json_encode(['message' => 'Success'])));
 
-        // Capture the call arguments - in testing mode, MOCK_ENDPOINT is used
         $this->mockClient->expects($this->once())
             ->method('post')
             ->with(
@@ -187,7 +169,6 @@ class NotifyServiceTest extends TestCase
 
         $result = $this->notifyService->notifySync(24);
 
-        // Add assertion to verify the method returns true on success
         $this->assertTrue($result);
     }
 }

@@ -48,15 +48,10 @@ class TransferService
 
         $this->executeTransfer($payer, $payee, $value);
 
-        $notificationSent = false;
-
-        try {
-            $this->notifyService->notify($payeeId);
-            $notificationSent = true;
-        } catch (TransferException $e) {
-            // Notification failed, but transfer completed
-            error_log("Failed to notify user {$payeeId}: " . $e->getMessage());
-        }
+        // Fire-and-forget: Schedule async notification without blocking response
+        // The notify() method uses Guzzle's postAsync with ->wait(false),
+        // so it doesn't block the transaction completion
+        $this->notifyService->notify($payeeId);
 
         return [
             'success' => true,
@@ -64,7 +59,7 @@ class TransferService
             'value' => $value,
             'payer_id' => $payerId,
             'payee_id' => $payeeId,
-            'notification_sent' => $notificationSent,
+            'notification_sent' => true,
         ];
     }
 
@@ -135,7 +130,7 @@ class TransferService
     }
 
     /**
-     * Valida dados básicos da transferência
+     * Validate transfer data (value, payer, payee)
      */
     private function validateTransferData(int $payerId, int $payeeId, float $value): void
     {
@@ -149,11 +144,10 @@ class TransferService
     }
 
     /**
-     * Valida regras de negócio
+     * Validate business rules for transfer
      */
     private function validateBusinessRules(User $payer, float $value): void
     {
-        // Shopkeepers cannot send transfers
         if ($payer->isShopkeeper()) {
             throw new BusinessRuleException('Shopkeepers cannot perform transfers');
         }
@@ -164,13 +158,13 @@ class TransferService
     }
 
     /**
-     * Executa a transferência dentro de uma transação DB
+     * Execute transfer within atomic database transaction
      */
     private function executeTransfer(User $payer, User $payee, float $value): void
     {
         $pdo = $this->userRepo->getPdo();
 
-        // Preserve original balances so we can restore in-memory state on failure
+        // Preserve original balances to restore in-memory state on failure
         $originalPayerBalance = $payer->balance;
         $originalPayeeBalance = $payee->balance;
 

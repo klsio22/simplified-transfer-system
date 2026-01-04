@@ -16,20 +16,34 @@ class NotifyService
     private bool $silentMode = false;
     private string $endpoint;
 
-    public function __construct(bool $silentMode = false)
+    /**
+     * @param bool $silentMode When true, suppresses error logging
+     * @param Client|null $client Optional Guzzle client (useful for injecting mocks in tests)
+     */
+    public function __construct(bool $silentMode = false, ?Client $client = null)
     {
         $this->silentMode = $silentMode || (getenv('APP_ENV') === 'testing');
         $this->endpoint = (getenv('APP_ENV') === 'testing') ? self::MOCK_ENDPOINT : self::ENDPOINT;
 
-        $this->client = new Client([
+        $this->client = $client ?? new Client([
             'timeout' => 5,
             'connect_timeout' => 3,
         ]);
     }
 
+    /**
+     * Send notification asynchronously (non-blocking)
+     * Uses Guzzle's postAsync with ->wait(false) to prevent blocking
+     * the main transaction flow. Failures are logged but don't impact
+     * the transfer response.
+     *
+     * @param int $payeeId The ID of the user to notify
+     * @return void
+     */
     public function notify(int $payeeId): void
     {
         try {
+            // postAsync + wait(false) = truly async, fire-and-forget
             $this->client->postAsync($this->endpoint, [
                 'json' => ['user_id' => $payeeId],
             ])->wait(false);
@@ -40,6 +54,15 @@ class NotifyService
         }
     }
 
+    /**
+     * Send notification synchronously (BLOCKING)
+     * ⚠️ WARNING: This method BLOCKS until the notification service responds.
+     * Use only in testing or scenarios where blocking is acceptable.
+     * For production transfers, use notify() instead (non-blocking).
+     *
+     * @param int $payeeId The ID of the user to notify
+     * @return bool True if notification was sent successfully, false otherwise
+     */
     public function notifySync(int $payeeId): bool
     {
         try {

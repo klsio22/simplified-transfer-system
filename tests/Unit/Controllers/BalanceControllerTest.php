@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\BalanceService;
 use PHPUnit\Framework\TestCase;
 use Slim\Psr7\Factory\ResponseFactory;
+use Slim\Psr7\Factory\ServerRequestFactory;
 
 class BalanceControllerTest extends TestCase
 {
@@ -29,9 +30,10 @@ class BalanceControllerTest extends TestCase
 
         $controller = new BalanceController($balanceService);
         $response = (new ResponseFactory())->createResponse(200);
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/');
         $args = ['id' => 1];
 
-        $result = $controller->show($response, $args);
+        $result = $controller->show($request, $response, $args);
 
         $this->assertEquals(200, $result->getStatusCode());
         $body = json_decode((string) $result->getBody(), true);
@@ -50,9 +52,10 @@ class BalanceControllerTest extends TestCase
 
         $controller = new BalanceController($balanceService);
         $response = (new ResponseFactory())->createResponse(200);
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/');
         $args = ['id' => 999];
 
-        $result = $controller->show($response, $args);
+        $result = $controller->show($request, $response, $args);
 
         $this->assertEquals(404, $result->getStatusCode());
         $body = json_decode((string) $result->getBody(), true);
@@ -69,9 +72,10 @@ class BalanceControllerTest extends TestCase
 
         $controller = new BalanceController($balanceService);
         $response = (new ResponseFactory())->createResponse(200);
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/');
         $args = ['id' => -1];
 
-        $result = $controller->show($response, $args);
+        $result = $controller->show($request, $response, $args);
 
         $this->assertEquals(422, $result->getStatusCode());
         $body = json_decode((string) $result->getBody(), true);
@@ -87,9 +91,10 @@ class BalanceControllerTest extends TestCase
 
         $controller = new BalanceController($balanceService);
         $response = (new ResponseFactory())->createResponse(200);
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/');
         $args = ['id' => 1];
 
-        $result = $controller->show($response, $args);
+        $result = $controller->show($request, $response, $args);
 
         $this->assertEquals(500, $result->getStatusCode());
         $body = json_decode((string) $result->getBody(), true);

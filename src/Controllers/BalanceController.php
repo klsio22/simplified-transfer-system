@@ -7,6 +7,7 @@ namespace App\Controllers;
 use App\Core\AppException;
 use App\Services\BalanceService;
 use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Log\LoggerInterface;
 
 class BalanceController
@@ -18,7 +19,10 @@ class BalanceController
     /**
      * @param array<string,mixed> $args
      */
-    public function show(Response $response, array $args): Response
+    /**
+     * @param \Psr\Http\Message\ServerRequestInterface $_request
+     */
+    public function show(Request $_request, Response $response, array $args): Response
     {
         $userId = $args['id'] ?? null;
 

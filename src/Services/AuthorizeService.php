@@ -6,22 +6,29 @@ namespace App\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Log\LoggerInterface;
 
 class AuthorizeService
 {
     private Client $client;
+    private ?LoggerInterface $logger;
 
-    public function __construct()
+    /**
+     * @param Client|null $client Optional Guzzle client for testing
+     * @param LoggerInterface|null $logger Optional PSR-3 logger
+     */
+    public function __construct(?Client $client = null, ?LoggerInterface $logger = null)
     {
-        $this->client = new Client([
+        $this->client = $client ?? new Client([
             'timeout' => 5,
             'connect_timeout' => 3,
         ]);
+
+        $this->logger = $logger;
     }
 
     public function isAuthorized(): bool
     {
-
         $authorized = false;
 
         try {
@@ -36,7 +43,7 @@ class AuthorizeService
                 $authorized = true;
             }
         } catch (GuzzleException $e) {
-            error_log("Error contacting authorization service: " . $e->getMessage());
+            $this->logger?->warning('Error contacting authorization service: ' . $e->getMessage());
         }
 
         return $authorized;

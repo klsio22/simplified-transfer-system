@@ -7,10 +7,11 @@ namespace App\Controllers;
 use App\Core\AppException;
 use App\Services\BalanceService;
 use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Log\LoggerInterface;
 
 class BalanceController
 {
-    public function __construct(private BalanceService $balanceService)
+    public function __construct(private BalanceService $balanceService, private ?LoggerInterface $logger = null)
     {
     }
 
@@ -34,7 +35,7 @@ class BalanceController
         } catch (AppException $e) {
             return $this->jsonResponse($response, ['error' => $e->getMessage()], $e->getStatusCode());
         } catch (\Throwable $e) {
-            error_log('Unexpected error in balance controller: ' . $e->getMessage());
+            $this->logger?->warning('Unexpected error in balance controller: ' . $e->getMessage());
 
             return $this->jsonResponse($response, ['error' => 'Internal server error'], 500);
         }

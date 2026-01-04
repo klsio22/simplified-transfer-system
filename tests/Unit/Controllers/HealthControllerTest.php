@@ -7,6 +7,7 @@ namespace Tests\Unit;
 use App\Controllers\HealthController;
 use PHPUnit\Framework\TestCase;
 use Slim\Psr7\Factory\ResponseFactory;
+use Slim\Psr7\Factory\ServerRequestFactory;
 
 class HealthControllerTest extends TestCase
 {
@@ -14,8 +15,9 @@ class HealthControllerTest extends TestCase
     {
         $controller = new HealthController();
         $response = (new ResponseFactory())->createResponse(200);
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/');
 
-        $result = $controller->hello($response);
+        $result = $controller->hello($request, $response);
 
         $this->assertEquals(200, $result->getStatusCode());
         $this->assertStringContainsString('application/json', $result->getHeaderLine('Content-Type'));

@@ -6,19 +6,20 @@ namespace App\Services;
 
 use App\Core\BusinessRuleException;
 use App\Core\InvalidTransferException;
-use App\Core\TransferException;
 use App\Core\TransferProcessingException;
 use App\Core\UnauthorizedException;
 use App\Core\UserNotFoundException;
 use App\Models\User;
 use App\Repositories\UserRepository;
+use Psr\Log\LoggerInterface;
 
 class TransferService
 {
     public function __construct(
         private UserRepository $userRepo,
         private AuthorizeService $authorizeService,
-        private NotifyService $notifyService
+        private NotifyService $notifyService,
+        private ?LoggerInterface $logger = null
     ) {
     }
 
@@ -183,14 +184,14 @@ class TransferService
                 try {
                     $pdo->rollBack();
                 } catch (\Throwable $rollEx) {
-                    error_log('Failed to roll back transaction: ' . $rollEx->getMessage());
+                    $this->logger?->warning('Failed to roll back transaction: ' . $rollEx->getMessage());
                 }
             }
 
             $payer->balance = $originalPayerBalance;
             $payee->balance = $originalPayeeBalance;
 
-            error_log("Error during transfer transaction: " . $e->getMessage());
+            $this->logger?->error("Error during transfer transaction: " . $e->getMessage());
 
             throw new TransferProcessingException('Failed to process transfer. Please try again.');
         }

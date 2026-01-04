@@ -9,11 +9,15 @@ use App\Services\UserService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Flash\Messages as FlashMessages;
+use Psr\Log\LoggerInterface;
 
 class UserController
 {
-    public function __construct(private UserService $userService, private ?FlashMessages $flash = null)
-    {
+    public function __construct(
+        private UserService $userService,
+        private ?FlashMessages $flash = null,
+        private ?LoggerInterface $logger = null
+    ) {
     }
 
     public function store(Request $request, Response $response): Response
@@ -54,7 +58,7 @@ class UserController
                 'statusCode' => $e->getStatusCode(),
             ];
         } catch (\Throwable $e) {
-            error_log('Unexpected error in user controller: ' . $e->getMessage());
+            $this->logger?->warning('Unexpected error in user controller: ' . $e->getMessage());
             $this->addFlashMessage('error', 'Internal server error');
 
             return [

@@ -9,12 +9,14 @@ use App\Services\TransferService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Flash\Messages as FlashMessages;
+use Psr\Log\LoggerInterface;
 
 class TransferController
 {
     public function __construct(
         private TransferService $transferService,
-        private ?FlashMessages $flash = null
+        private ?FlashMessages $flash = null,
+        private ?LoggerInterface $logger = null
     ) {
     }
 
@@ -38,7 +40,7 @@ class TransferController
             return $this->jsonResponse($response, ['error' => $e->getMessage()], $e->getStatusCode());
         } catch (\Throwable $e) {
             // unexpected
-            error_log('Unexpected error in transfer controller: ' . $e->getMessage());
+            $this->logger?->warning('Unexpected error in transfer controller: ' . $e->getMessage());
             if ($this->flash !== null) {
                 $this->flash->addMessage('error', 'Internal server error');
             }

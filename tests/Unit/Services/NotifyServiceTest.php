@@ -12,6 +12,7 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\NullLogger;
 
 class NotifyServiceTest extends TestCase
 {
@@ -26,7 +27,7 @@ class NotifyServiceTest extends TestCase
 
         $this->mockClient = $this->createMock(Client::class);
 
-        $this->notifyService = new NotifyService(true, $this->mockClient);
+        $this->notifyService = new NotifyService(true, $this->mockClient, new NullLogger());
     }
 
     /**

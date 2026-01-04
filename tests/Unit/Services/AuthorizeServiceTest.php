@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Services;
 
 use App\Services\AuthorizeService;
+use Psr\Log\NullLogger;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
@@ -23,11 +24,7 @@ class AuthorizeServiceTest extends TestCase
         parent::setUp();
 
         $this->mockClient = $this->createMock(Client::class);
-        $this->authorizeService = new AuthorizeService();
-
-        $reflection = new \ReflectionClass(AuthorizeService::class);
-        $property = $reflection->getProperty('client');
-        $property->setValue($this->authorizeService, $this->mockClient);
+        $this->authorizeService = new AuthorizeService($this->mockClient, new NullLogger());
     }
 
     public function testIsAuthorizedReturnsTrueWithAuthorizationTrue(): void

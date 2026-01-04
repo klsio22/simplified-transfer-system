@@ -6,6 +6,7 @@ namespace App\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Log\LoggerInterface;
 
 class NotifyService
 {
@@ -15,12 +16,14 @@ class NotifyService
     private Client $client;
     private bool $silentMode = false;
     private string $endpoint;
+    private ?LoggerInterface $logger;
 
     /**
      * @param bool $silentMode When true, suppresses error logging
      * @param Client|null $client Optional Guzzle client (useful for injecting mocks in tests)
+     * @param LoggerInterface|null $logger Optional PSR-3 logger
      */
-    public function __construct(bool $silentMode = false, ?Client $client = null)
+    public function __construct(bool $silentMode = false, ?Client $client = null, ?LoggerInterface $logger = null)
     {
         $this->silentMode = $silentMode || (getenv('APP_ENV') === 'testing');
         $this->endpoint = (getenv('APP_ENV') === 'testing') ? self::MOCK_ENDPOINT : self::ENDPOINT;
@@ -29,6 +32,8 @@ class NotifyService
             'timeout' => 5,
             'connect_timeout' => 3,
         ]);
+
+        $this->logger = $logger;
     }
 
     /**
@@ -49,7 +54,7 @@ class NotifyService
             ])->wait(false);
         } catch (GuzzleException $e) {
             if (! $this->silentMode) {
-                error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());
+                $this->logger?->warning("Error sending notification to user {$payeeId}: " . $e->getMessage());
             }
         }
     }
@@ -75,7 +80,7 @@ class NotifyService
             return isset($data['message']) && $data['message'] === 'Success';
         } catch (GuzzleException $e) {
             if (! $this->silentMode) {
-                error_log("Error sending notification to user {$payeeId}: " . $e->getMessage());
+                $this->logger?->warning("Error sending notification to user {$payeeId}: " . $e->getMessage());
             }
 
             return false;

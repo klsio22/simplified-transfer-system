@@ -8,8 +8,8 @@ use App\Core\AppException;
 use App\Services\UserService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Slim\Flash\Messages as FlashMessages;
 use Psr\Log\LoggerInterface;
+use Slim\Flash\Messages as FlashMessages;
 
 class UserController
 {

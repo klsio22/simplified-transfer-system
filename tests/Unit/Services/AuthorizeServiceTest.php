@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\Unit\Services;
 
 use App\Services\AuthorizeService;
-use Psr\Log\NullLogger;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 
 class AuthorizeServiceTest extends TestCase
 {

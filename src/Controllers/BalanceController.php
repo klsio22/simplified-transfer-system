@@ -17,10 +17,10 @@ class BalanceController
     }
 
     /**
-     * @param array<string,mixed> $args
-     */
-    /**
      * @param \Psr\Http\Message\ServerRequestInterface $_request
+     * @param Response $response
+     * @param array<string,mixed> $args
+     * @return Response
      */
     public function show(Request $_request, Response $response, array $args): Response
     {

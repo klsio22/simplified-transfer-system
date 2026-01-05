@@ -49,9 +49,7 @@ class TransferService
 
         $this->executeTransfer($payer, $payee, $value);
 
-        // Fire-and-forget: Schedule async notification without blocking response
-        // The notify() method uses Guzzle's postAsync with ->wait(false),
-        // so it doesn't block the transaction completion
+
         $this->notifyService->notify($payeeId);
 
         return [

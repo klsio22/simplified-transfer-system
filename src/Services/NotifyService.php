@@ -19,8 +19,8 @@ class NotifyService
     private ?LoggerInterface $logger;
 
     /**
-     * @param bool $silentMode When true, suppresses error logging
-     * @param Client|null $client Optional Guzzle client (useful for injecting mocks in tests)
+     * @param bool $silentMode Suppress error logging when true
+     * @param Client|null $client Optional Guzzle client for testing
      * @param LoggerInterface|null $logger Optional PSR-3 logger
      */
     public function __construct(bool $silentMode = false, ?Client $client = null, ?LoggerInterface $logger = null)
@@ -37,10 +37,9 @@ class NotifyService
     }
 
     /**
-     * Send notification asynchronously (non-blocking)
-     * Uses Guzzle's postAsync with ->wait(false) to prevent blocking
-     * the main transaction flow. Failures are logged but don't impact
-     * the transfer response.
+     * Send notification asynchronously (non-blocking).
+     * Uses an asynchronous POST request to perform a fire-and-forget call.
+     * Failures are logged but do not affect the main flow.
      *
      * @param int $payeeId The ID of the user to notify
      * @return void
@@ -48,7 +47,6 @@ class NotifyService
     public function notify(int $payeeId): void
     {
         try {
-            // postAsync + wait(false) = truly async, fire-and-forget
             $this->client->postAsync($this->endpoint, [
                 'json' => ['user_id' => $payeeId],
             ])->wait(false);
@@ -60,13 +58,11 @@ class NotifyService
     }
 
     /**
-     * Send notification synchronously (BLOCKING)
-     * ⚠️ WARNING: This method BLOCKS until the notification service responds.
-     * Use only in testing or scenarios where blocking is acceptable.
-     * For production transfers, use notify() instead (non-blocking).
+     * Send notification synchronously (blocking).
+     * Use only for testing or when a blocking call is acceptable.
      *
      * @param int $payeeId The ID of the user to notify
-     * @return bool True if notification was sent successfully, false otherwise
+     * @return bool True on success, false on failure
      */
     public function notifySync(int $payeeId): bool
     {

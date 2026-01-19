@@ -38,16 +38,21 @@ class TransferServiceTest extends TestCase
         $this->notifyService = $this->createMock(NotifyService::class);
         $this->redisLockService = $this->createMock(RedisLockService::class);
 
-        // Repository should return the PDO used for transactions
         $this->userRepository->method('getPdo')->willReturn($this->pdo);
 
-        // Redis lock service default behavior: always succeeds
-        $this->redisLockService->method('acquireLocks')->willReturn([
-            'lock1' => 'token1',
-            'lock2' => 'token2',
-            'id1' => 1,
-            'id2' => 2,
-        ]);
+        $this->redisLockService
+            ->method('acquireLocks')
+            ->willReturnCallback(function (int $userId1, int $userId2): array {
+                $firstId = $userId1 < $userId2 ? $userId1 : $userId2;
+                $secondId = $userId1 < $userId2 ? $userId2 : $userId1;
+
+                return [
+                    'lock1' => "token_{$firstId}",
+                    'lock2' => "token_{$secondId}",
+                    'id1' => $firstId,
+                    'id2' => $secondId,
+                ];
+            });
 
         $this->transferService = new TransferService(
             $this->userRepository,
@@ -87,14 +92,6 @@ class TransferServiceTest extends TestCase
                 [1, $payer],
                 [2, $payee],
             ]);
-
-        // Mock Redis lock acquisition
-        $this->redisLockService->method('acquireLocks')->willReturn([
-            'lock1' => 'token1',
-            'lock2' => 'token2',
-            'id1' => 1,
-            'id2' => 2,
-        ]);
 
         $this->pdo->method('beginTransaction')->willReturn(true);
         $this->pdo->method('commit')->willReturn(true);

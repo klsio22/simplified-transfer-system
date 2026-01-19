@@ -41,7 +41,7 @@ return [
         try {
             $redis->connect($host, $port, $timeout);
 
-            if (! empty($_ENV['REDIS_PASSWORD'])) {
+            if (array_key_exists('REDIS_PASSWORD', $_ENV)) {
                 $redis->auth($_ENV['REDIS_PASSWORD']);
             }
 
@@ -49,10 +49,6 @@ return [
 
             return $redis;
         } catch (\Throwable $e) {
-            // In non-critical local/test environments, provide an in-memory fallback
-            // to allow the application and tests to start even if Redis is temporarily
-            // unavailable. In production, rethrow a descriptive exception so the
-            // deployment fails fast.
             $env = $_ENV['APP_ENV'] ?? '';
             if ($env === 'test' || $env === 'local') {
                 return new class () {

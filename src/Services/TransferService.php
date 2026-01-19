@@ -165,14 +165,11 @@ class TransferService
      */
     private function executeTransfer(User $payer, User $payee, float $value): void
     {
-        // Acquire locks for both users (in deterministic order)
         $locks = $this->redisLockService->acquireLocks($payer->id, $payee->id);
 
         try {
-            // Execute transfer within database transaction (double protection)
             $this->executeTransferWithDbTransaction($payer, $payee, $value);
         } finally {
-            // Always release locks, even if transfer fails
             $this->redisLockService->releaseLocks($locks);
         }
     }
@@ -190,7 +187,7 @@ class TransferService
         try {
             $pdo->beginTransaction();
 
-            // Re-fetch users from DB under lock (freshness + detection of concurrent changes)
+
             $freshPayer = $this->userRepo->find($payer->id);
             $freshPayee = $this->userRepo->find($payee->id);
 
@@ -198,7 +195,6 @@ class TransferService
                 throw new TransferProcessingException('User not found during transfer');
             }
 
-            // Re-validate balance (phantom read prevention)
             if (! $freshPayer->hasSufficientBalance($value)) {
                 throw new BusinessRuleException('Insufficient balance');
             }

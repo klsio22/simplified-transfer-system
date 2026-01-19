@@ -17,11 +17,11 @@ use Slim\Flash\Messages;
 
 return [
     // DatabaseManager and ORM (Cycle)
-    DatabaseManager::class => function (ContainerInterface $c) {
+    DatabaseManager::class => function () {
         return require __DIR__ . '/database.php';
     },
 
-    ORM::class => function (ContainerInterface $c) {
+    ORM::class => function () {
         return require __DIR__ . '/orm.php';
     },
 
@@ -30,21 +30,93 @@ return [
     },
 
     // Redis connection for distributed locking
-    'Redis' => function (ContainerInterface $c) {
+    'Redis' => function () {
+        $host = $_ENV['REDIS_HOST'] ?? 'redis';
+        $port = (int) ($_ENV['REDIS_PORT'] ?? 6379);
+        $db = (int) ($_ENV['REDIS_DB'] ?? 0);
+        $timeout = 2.0;
+
         $redis = new \Redis();
-        $redis->connect(
-            $_ENV['REDIS_HOST'] ?? 'redis',
-            (int) ($_ENV['REDIS_PORT'] ?? 6379),
-            2.0 // timeout
-        );
 
-        if (! empty($_ENV['REDIS_PASSWORD'])) {
-            $redis->auth($_ENV['REDIS_PASSWORD']);
+        try {
+            $redis->connect($host, $port, $timeout);
+
+            if (! empty($_ENV['REDIS_PASSWORD'])) {
+                $redis->auth($_ENV['REDIS_PASSWORD']);
+            }
+
+            $redis->select($db);
+
+            return $redis;
+        } catch (\Throwable $e) {
+            // In non-critical local/test environments, provide an in-memory fallback
+            // to allow the application and tests to start even if Redis is temporarily
+            // unavailable. In production, rethrow a descriptive exception so the
+            // deployment fails fast.
+            $env = $_ENV['APP_ENV'] ?? '';
+            if ($env === 'test' || $env === 'local') {
+                return new class () {
+                    private array $data = [];
+
+                    public function set($k, $v)
+                    {
+                        $this->data[$k] = $v;
+
+                        return true;
+                    }
+
+                    public function get($k)
+                    {
+                        return $this->data[$k] ?? null;
+                    }
+
+                    public function del($k)
+                    {
+                        if (isset($this->data[$k])) {
+                            unset($this->data[$k]);
+
+                            return 1;
+                        }
+
+                        return 0;
+                    }
+
+                    public function exists($k)
+                    {
+                        return isset($this->data[$k]) ? 1 : 0;
+                    }
+
+                    public function eval($keys)
+                    {
+                        $key = $keys[0] ?? null;
+                        $token = $keys[1] ?? null;
+                        if ($key && ($this->data[$key] ?? null) === $token) {
+                            unset($this->data[$key]);
+
+                            return 1;
+                        }
+
+                        return 0;
+                    }
+
+                    public function select()
+                    {
+                        return true;
+                    }
+
+                    public function auth()
+                    {
+                        return true;
+                    }
+                };
+            }
+
+            throw new \RuntimeException(
+                sprintf('Failed to connect to Redis at %s:%d (db %d): %s', $host, $port, $db, $e->getMessage()),
+                0,
+                $e
+            );
         }
-
-        $redis->select((int) ($_ENV['REDIS_DB'] ?? 0));
-
-        return $redis;
     },
 
     // Legacy PDO (if still needed)

@@ -34,6 +34,9 @@ class TransferServiceTest extends TestCase
         $this->authorizeService = $this->createMock(AuthorizeService::class);
         $this->notifyService = $this->createMock(NotifyService::class);
 
+        // Repository should return the PDO used for transactions
+        $this->userRepository->method('getPdo')->willReturn($this->pdo);
+
         $this->transferService = new TransferService(
             $this->userRepository,
             $this->authorizeService,
@@ -67,6 +70,14 @@ class TransferServiceTest extends TestCase
 
         $this->userRepository
             ->method('find')
+            ->willReturnMap([
+                [1, $payer],
+                [2, $payee],
+            ]);
+
+        // When executing the transfer the service will re-fetch rows with locks
+        $this->userRepository
+            ->method('findForUpdate')
             ->willReturnMap([
                 [1, $payer],
                 [2, $payee],

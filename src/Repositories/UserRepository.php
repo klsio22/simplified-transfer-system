@@ -84,6 +84,24 @@ class UserRepository
     }
 
     /**
+     * Find a user and lock the row for update inside a transaction
+     *
+     * @return User|null
+     */
+    public function findForUpdate(int $id): ?User
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = ? FOR UPDATE");
+        $stmt->execute([$id]);
+        $data = $stmt->fetch();
+
+        if (! $data) {
+            return null;
+        }
+
+        return $this->hydrate($data);
+    }
+
+    /**
      * Hidrata um objeto User a partir dos dados do banco
      */
     /**

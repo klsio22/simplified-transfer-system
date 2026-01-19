@@ -163,18 +163,28 @@ class TransferService
     {
         $pdo = $this->userRepo->getPdo();
 
-        // Preserve original balances to restore in-memory state on failure
         $originalPayerBalance = $payer->balance;
         $originalPayeeBalance = $payee->balance;
 
         try {
             $pdo->beginTransaction();
 
-            $payer->balance -= $value;
-            $this->userRepo->updateBalance($payer);
+            $lockedPayer = $this->userRepo->findForUpdate($payer->id);
+            $lockedPayee = $this->userRepo->findForUpdate($payee->id);
 
-            $payee->balance += $value;
-            $this->userRepo->updateBalance($payee);
+            if (! $lockedPayer || ! $lockedPayee) {
+                throw new TransferProcessingException('User not found during transfer');
+            }
+
+            if (! $lockedPayer->hasSufficientBalance($value)) {
+                throw new BusinessRuleException('Insufficient balance');
+            }
+
+            $lockedPayer->balance -= $value;
+            $this->userRepo->updateBalance($lockedPayer);
+
+            $lockedPayee->balance += $value;
+            $this->userRepo->updateBalance($lockedPayee);
 
             $pdo->commit();
         } catch (\Throwable $e) {

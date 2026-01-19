@@ -12,20 +12,22 @@ use DateTimeImmutable;
 #[Entity(table: 'users')]
 class User
 {
+    private const COL_STRING_255 = 'string(255)';
+
     #[Column(type: 'primary')]
     /** @var int */
     private int $id = 0;
 
-    #[Column(type: 'string(255)')]
+    #[Column(type: self::COL_STRING_255)]
     private string $fullName;
 
     #[Column(type: 'string(14)')]
     private string $cpf;
 
-    #[Column(type: 'string(255)')]
+    #[Column(type: self::COL_STRING_255)]
     private string $email;
 
-    #[Column(type: 'string(255)')]
+    #[Column(type: self::COL_STRING_255)]
     private string $password;
 
     #[Column(type: "string(20)", default: 'common')]

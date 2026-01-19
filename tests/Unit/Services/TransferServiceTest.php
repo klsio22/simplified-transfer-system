@@ -102,6 +102,28 @@ class TransferServiceTest extends TestCase
         $this->assertEquals(50.0, $result['value']);
     }
 
+    public function testTransferFailsWhenAuthorizationServiceDenies(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Transaction not authorized by authorization service');
+        $this->expectExceptionCode(422);
+
+        $payer = $this->createCommonUser(1, 100.0);
+        $payee = $this->createCommonUser(2, 0.0);
+
+        $this->userRepository
+            ->method('find')
+            ->willReturnMap([
+                [1, $payer],
+                [2, $payee],
+            ]);
+
+        // Authorization service denies (or external timed out)
+        $this->authorizeService->method('isAuthorized')->willReturn(false);
+
+        $this->transferService->transfer(1, 2, 50.0);
+    }
+
     public function testTransferWithInsufficientBalanceShouldFail(): void
     {
         $this->expectException(Exception::class);

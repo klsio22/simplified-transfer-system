@@ -19,10 +19,17 @@ class AuthorizeService
      */
     public function __construct(?Client $client = null, ?LoggerInterface $logger = null)
     {
-        $this->client = $client ?? new Client([
-            'timeout' => 5,
-            'connect_timeout' => 3,
-        ]);
+        if ($client !== null) {
+            $this->client = $client;
+        } else {
+            $timeout = (float) (getenv('EXTERNAL_SERVICE_TIMEOUT') ?: 5);
+            $connectTimeout = max(0.5, min($timeout, 3.0));
+
+            $this->client = new Client([
+                'timeout' => $timeout,
+                'connect_timeout' => $connectTimeout,
+            ]);
+        }
 
         $this->logger = $logger;
     }

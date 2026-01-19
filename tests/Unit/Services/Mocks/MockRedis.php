@@ -18,11 +18,13 @@ class MockRedis
 
         if ($hasNX && isset($this->data[$key])) {
             $this->setCallCount++;
+
             return false;
         }
 
         $this->data[$key] = $value;
         $this->setCallCount++;
+
         return true;
     }
 
@@ -35,8 +37,10 @@ class MockRedis
     {
         if (isset($this->data[$key])) {
             unset($this->data[$key]);
+
             return 1;
         }
+
         return 0;
     }
 
@@ -52,6 +56,7 @@ class MockRedis
 
         if (($this->data[$key] ?? null) === $token) {
             unset($this->data[$key]);
+
             return 1;
         }
 

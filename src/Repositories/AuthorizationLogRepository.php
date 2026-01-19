@@ -22,8 +22,13 @@ class AuthorizationLogRepository
      * @param bool $success
      * @return int
      */
-    public function log(string $endpoint, int $httpCode, array $request = [], ?string $responseBody = null, bool $success = false): int
-    {
+    public function log(
+        string $endpoint,
+        int $httpCode,
+        array $request = [],
+        ?string $responseBody = null,
+        bool $success = false
+    ): int {
         $stmt = $this->pdo->prepare(
             'INSERT INTO authorization_logs (endpoint, http_code, request_payload, response_body, success, created_at)
              VALUES (:endpoint, :http_code, :request_payload, :response_body, :success, NOW())'

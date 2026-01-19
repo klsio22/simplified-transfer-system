@@ -123,9 +123,7 @@ class TransferRepository
     private function hydrate(array $data): Transfer
     {
         $transfer = new Transfer();
-        if (method_exists($transfer, 'setStatus')) {
-            $transfer->setStatus((string) $data['status']);
-        }
+        $transfer->setStatus((string) $data['status']);
 
         return $transfer;
     }

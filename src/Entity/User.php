@@ -19,10 +19,10 @@ class User
     #[Column(type: 'string(255)')]
     private string $fullName;
 
-    #[Column(type: 'string(14)', unique: true)]
+    #[Column(type: 'string(14)')]
     private string $cpf;
 
-    #[Column(type: 'string(255)', unique: true)]
+    #[Column(type: 'string(255)')]
     private string $email;
 
     #[Column(type: 'string(255)')]

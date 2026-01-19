@@ -24,7 +24,8 @@ class NotificationRepository
     public function log(int $userId, string $type, string $status, array $meta = []): int
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO notifications (user_id, type, status, meta, created_at) VALUES (:user_id, :type, :status, :meta, NOW())'
+            'INSERT INTO notifications (user_id, type, status, meta, created_at) '
+            . 'VALUES (:user_id, :type, :status, :meta, NOW())'
         );
 
         $stmt->execute([

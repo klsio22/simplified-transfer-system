@@ -18,9 +18,9 @@ use Psr\Log\LoggerInterface;
 class RedisLockService
 {
     private const LOCK_PREFIX = 'transfer:lock:';
-    private const LOCK_TTL = 30;                    // seconds (auto-expiration)
-    private const LOCK_WAIT_TIMEOUT = 5;            // seconds
-    private const LOCK_RETRY_INTERVAL = 50_000;     // microseconds (50ms)
+    private const LOCK_TTL = 30;
+    private const LOCK_WAIT_TIMEOUT = 5;
+    private const LOCK_RETRY_INTERVAL = 50_000;
 
     public function __construct(
         private mixed $redis,
@@ -50,11 +50,6 @@ class RedisLockService
             $lock1 = $this->acquireLock($firstId);
             $lock2 = $this->acquireLock($secondId);
 
-            $this->logger?->debug(
-                'Locks acquired for transfer',
-                ['user1' => $firstId, 'user2' => $secondId]
-            );
-
             return [
                 'lock1' => $lock1,
                 'lock2' => $lock2,
@@ -62,17 +57,19 @@ class RedisLockService
                 'id2' => $secondId,
             ];
         } catch (\Throwable $e) {
-            // Release first lock if second acquisition fails
             if (isset($lock1)) {
                 $this->releaseLock($firstId, $lock1);
             }
-
             throw $e;
         }
     }
 
     /**
-     * Release both locks atomically using Lua script
+     * Release both locks sequentially
+     *
+     * Note: This is NOT atomic. If the first release succeeds but the second fails,
+     * one lock remains held until TTL expiration. In practice, this is acceptable
+     * because the TTL (30s) ensures eventual cleanup.
      *
      * @param array<string,mixed> $locks Lock tokens from acquireLocks()
      * @return void
@@ -103,9 +100,6 @@ class RedisLockService
     /**
      * Acquire a single lock with retry logic
      *
-     * Attempts to acquire a lock for the specified user ID. If the lock is already
-     * held, retries with exponential backoff up to LOCK_WAIT_TIMEOUT.
-     *
      * @param int $userId User ID to lock
      * @return string Lock token (unique identifier for this lock holder)
      * @throws LockAcquisitionException If unable to acquire within timeout
@@ -117,8 +111,6 @@ class RedisLockService
         $startTime = microtime(true);
 
         while (true) {
-            // SET NX EX: Set if Not eXists, with EXpiration time
-            // Returns true if lock acquired, false if already held by another process
             $acquired = $this->redis->set($key, $token, ['NX', 'EX' => self::LOCK_TTL]);
 
             if ($acquired) {
@@ -146,9 +138,8 @@ class RedisLockService
     /**
      * Release a lock using compare-and-delete Lua script
      *
-     * Only deletes the lock if the token matches. This prevents one process from
-     * releasing a lock held by another process (e.g., if the first holder timed out
-     * and the lock expired and was re-acquired).
+     * Only deletes the lock if the token matches, preventing one process from
+     * releasing a lock held by another.
      *
      * @param int $userId User ID
      * @param string $token Lock token from acquireLock()
@@ -158,7 +149,6 @@ class RedisLockService
     {
         $key = self::LOCK_PREFIX . $userId;
 
-        // Lua script: compare token and delete atomically
         $script = <<<LUA
             if redis.call("get", KEYS[1]) == ARGV[1] then
                 return redis.call("del", KEYS[1])

@@ -169,11 +169,22 @@ class TransferService
         try {
             $pdo->beginTransaction();
 
-            $lockedPayer = $this->userRepo->findForUpdate($payer->id);
-            $lockedPayee = $this->userRepo->findForUpdate($payee->id);
+            $firstId = $payer->id < $payee->id ? $payer->id : $payee->id;
+            $secondId = $payer->id < $payee->id ? $payee->id : $payer->id;
 
-            if (! $lockedPayer || ! $lockedPayee) {
+            $firstLocked = $this->userRepo->findForUpdate($firstId);
+            $secondLocked = $this->userRepo->findForUpdate($secondId);
+
+            if (! $firstLocked || ! $secondLocked) {
                 throw new TransferProcessingException('User not found during transfer');
+            }
+
+            if ($firstLocked->id === $payer->id) {
+                $lockedPayer = $firstLocked;
+                $lockedPayee = $secondLocked;
+            } else {
+                $lockedPayer = $secondLocked;
+                $lockedPayee = $firstLocked;
             }
 
             if (! $lockedPayer->hasSufficientBalance($value)) {

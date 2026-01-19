@@ -13,6 +13,8 @@ use DateTimeImmutable;
 class User
 {
     private const COL_STRING_255 = 'string(255)';
+        private const COL_STRING_14 = 'string(14)';
+        private const COL_STRING_20 = 'string(20)';
 
     #[Column(type: 'primary')]
     /** @var int */
@@ -21,7 +23,7 @@ class User
     #[Column(type: self::COL_STRING_255)]
     private string $fullName;
 
-    #[Column(type: 'string(14)')]
+        #[Column(type: self::COL_STRING_14, unique: true)]
     private string $cpf;
 
     #[Column(type: self::COL_STRING_255)]
@@ -30,7 +32,7 @@ class User
     #[Column(type: self::COL_STRING_255)]
     private string $password;
 
-    #[Column(type: "string(20)", default: 'common')]
+    #[Column(type: self::COL_STRING_20, default: 'common')]
     private string $type = 'common';
 
     #[Column(type: 'decimal(10,2)', default: '0.00')]

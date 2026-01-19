@@ -13,6 +13,12 @@ RUN apk add --no-cache \
 # Instala extensões PHP necessárias
 RUN docker-php-ext-install pdo pdo_mysql
 
+# Instala PECL Redis extension
+RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del .build-deps
+
 # Instala Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

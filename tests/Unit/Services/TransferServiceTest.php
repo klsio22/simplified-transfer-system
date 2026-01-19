@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Repositories\UserRepository;
 use App\Services\AuthorizeService;
 use App\Services\NotifyService;
+use App\Services\RedisLockService;
 use App\Services\TransferService;
 use Exception;
 use PDO;
@@ -22,6 +23,8 @@ class TransferServiceTest extends TestCase
     private AuthorizeService $authorizeService;
     /** @var NotifyService&\PHPUnit\Framework\MockObject\MockObject */
     private NotifyService $notifyService;
+    /** @var RedisLockService&\PHPUnit\Framework\MockObject\MockObject */
+    private RedisLockService $redisLockService;
     /** @var PDO&\PHPUnit\Framework\MockObject\MockObject */
     private PDO $pdo;
 
@@ -33,14 +36,24 @@ class TransferServiceTest extends TestCase
         $this->userRepository = $this->createMock(UserRepository::class);
         $this->authorizeService = $this->createMock(AuthorizeService::class);
         $this->notifyService = $this->createMock(NotifyService::class);
+        $this->redisLockService = $this->createMock(RedisLockService::class);
 
         // Repository should return the PDO used for transactions
         $this->userRepository->method('getPdo')->willReturn($this->pdo);
 
+        // Redis lock service default behavior: always succeeds
+        $this->redisLockService->method('acquireLocks')->willReturn([
+            'lock1' => 'token1',
+            'lock2' => 'token2',
+            'id1' => 1,
+            'id2' => 2,
+        ]);
+
         $this->transferService = new TransferService(
             $this->userRepository,
             $this->authorizeService,
-            $this->notifyService
+            $this->notifyService,
+            $this->redisLockService
         );
     }
 
@@ -75,13 +88,13 @@ class TransferServiceTest extends TestCase
                 [2, $payee],
             ]);
 
-        // When executing the transfer the service will re-fetch rows with locks
-        $this->userRepository
-            ->method('findForUpdate')
-            ->willReturnMap([
-                [1, $payer],
-                [2, $payee],
-            ]);
+        // Mock Redis lock acquisition
+        $this->redisLockService->method('acquireLocks')->willReturn([
+            'lock1' => 'token1',
+            'lock2' => 'token2',
+            'id1' => 1,
+            'id2' => 2,
+        ]);
 
         $this->pdo->method('beginTransaction')->willReturn(true);
         $this->pdo->method('commit')->willReturn(true);

@@ -6,6 +6,7 @@ use App\Repositories\UserRepository;
 use App\Services\AuthorizeService;
 use App\Services\BalanceService;
 use App\Services\NotifyService;
+use App\Services\RedisLockService;
 use App\Services\TransferService;
 use App\Services\UserService;
 use Cycle\Database\DatabaseManager;
@@ -28,6 +29,24 @@ return [
         return new EntityManager($c->get(ORM::class));
     },
 
+    // Redis connection for distributed locking
+    'Redis' => function (ContainerInterface $c) {
+        $redis = new \Redis();
+        $redis->connect(
+            $_ENV['REDIS_HOST'] ?? 'redis',
+            (int) ($_ENV['REDIS_PORT'] ?? 6379),
+            2.0 // timeout
+        );
+
+        if (! empty($_ENV['REDIS_PASSWORD'])) {
+            $redis->auth($_ENV['REDIS_PASSWORD']);
+        }
+
+        $redis->select((int) ($_ENV['REDIS_DB'] ?? 0));
+
+        return $redis;
+    },
+
     // Legacy PDO (if still needed)
     \PDO::class => function (ContainerInterface $c) {
         $dsn = sprintf(
@@ -45,12 +64,14 @@ return [
         return $pdo;
     },
 
-    AuthorizeService::class => DI\create(),
-    NotifyService::class => DI\create(),
-    TransferService::class => DI\autowire(),
-    UserService::class => DI\autowire(),
-    BalanceService::class => DI\autowire(),
-    UserRepository::class => DI\autowire(),
+    // Services
+    AuthorizeService::class => \DI\create(),
+    NotifyService::class => \DI\create(),
+    RedisLockService::class => \DI\autowire(),
+    TransferService::class => \DI\autowire(),
+    UserService::class => \DI\autowire(),
+    BalanceService::class => \DI\autowire(),
+    UserRepository::class => \DI\autowire(),
     Messages::class => function () {
         return new Messages();
     },

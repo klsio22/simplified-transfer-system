@@ -123,7 +123,33 @@ class TransferRepository
     private function hydrate(array $data): Transfer
     {
         $transfer = new Transfer();
-        $transfer->setStatus((string) $data['status']);
+        if (isset($data['id'])) {
+            $transfer->setId((int) $data['id']);
+        }
+
+        if (isset($data['payer_id'])) {
+            $transfer->setPayerId((int) $data['payer_id']);
+        }
+
+        if (isset($data['payee_id'])) {
+            $transfer->setPayeeId((int) $data['payee_id']);
+        }
+
+        if (isset($data['value'])) {
+            $transfer->setValue((float) $data['value']);
+        }
+
+        if (isset($data['status'])) {
+            $transfer->setStatus((string) $data['status']);
+        }
+
+        if (! empty($data['created_at'])) {
+            $transfer->setCreatedAt(new \DateTimeImmutable((string) $data['created_at']));
+        }
+
+        if (! empty($data['updated_at'])) {
+            $transfer->setUpdatedAt(new \DateTimeImmutable((string) $data['updated_at']));
+        }
 
         return $transfer;
     }

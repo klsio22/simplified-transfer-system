@@ -29,11 +29,9 @@ class Transfer
     private string $status = 'pending';
 
     #[Column(type: 'timestamp', nullable: true)]
-    /** @phpstan-ignore-next-line */
     private ?DateTimeImmutable $createdAt = null;
 
     #[Column(type: 'timestamp', nullable: true)]
-    /** @phpstan-ignore-next-line */
     private ?DateTimeImmutable $updatedAt = null;
 
     #[BelongsTo(target: User::class, outerKey: 'id', innerKey: 'payerId')]
@@ -120,6 +118,27 @@ class Transfer
     public function setValue(float $value): self
     {
         $this->value = $value;
+
+        return $this;
+    }
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    public function setCreatedAt(?\DateTimeImmutable $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

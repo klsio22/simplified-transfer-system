@@ -102,10 +102,7 @@ class UserRepository
     }
 
     /**
-     * Hidrata um objeto User a partir dos dados do banco
-     */
-    /**
-     * Hidrata um objeto User a partir dos dados do banco
+     * Hydrate a User object from database data
      *
      * @param array<string,mixed> $data
      */

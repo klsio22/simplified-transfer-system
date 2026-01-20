@@ -135,7 +135,8 @@ return [
     // Services
     AuthorizeService::class => \DI\create(),
     NotifyService::class => \DI\create(),
-    RedisLockService::class => \DI\autowire(),
+    RedisLockService::class => \DI\create()
+        ->constructor(\DI\get('Redis')),
     TransferService::class => \DI\autowire(),
     UserService::class => \DI\autowire(),
     BalanceService::class => \DI\autowire(),

@@ -32,7 +32,7 @@ Content-Type: {{contentType}}
 {
   "value": 10.00,
   "payer": 1,
-  "payee": 3
+  "payee": 4
 }
 
 ###

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Repositories\UserRepository;
 use App\Services\AuthorizeService;
 use App\Services\NotifyService;
+use App\Services\RedisLockService;
 use App\Services\TransferService;
 use Exception;
 use PDO;
@@ -22,6 +23,8 @@ class TransferServiceTest extends TestCase
     private AuthorizeService $authorizeService;
     /** @var NotifyService&\PHPUnit\Framework\MockObject\MockObject */
     private NotifyService $notifyService;
+    /** @var RedisLockService&\PHPUnit\Framework\MockObject\MockObject */
+    private RedisLockService $redisLockService;
     /** @var PDO&\PHPUnit\Framework\MockObject\MockObject */
     private PDO $pdo;
 
@@ -33,14 +36,29 @@ class TransferServiceTest extends TestCase
         $this->userRepository = $this->createMock(UserRepository::class);
         $this->authorizeService = $this->createMock(AuthorizeService::class);
         $this->notifyService = $this->createMock(NotifyService::class);
+        $this->redisLockService = $this->createMock(RedisLockService::class);
 
-        // Repository should return the PDO used for transactions
         $this->userRepository->method('getPdo')->willReturn($this->pdo);
+
+        $this->redisLockService
+            ->method('acquireLocks')
+            ->willReturnCallback(function (int $userId1, int $userId2): array {
+                $firstId = $userId1 < $userId2 ? $userId1 : $userId2;
+                $secondId = $userId1 < $userId2 ? $userId2 : $userId1;
+
+                return [
+                    'lock1' => "token_{$firstId}",
+                    'lock2' => "token_{$secondId}",
+                    'id1' => $firstId,
+                    'id2' => $secondId,
+                ];
+            });
 
         $this->transferService = new TransferService(
             $this->userRepository,
             $this->authorizeService,
-            $this->notifyService
+            $this->notifyService,
+            $this->redisLockService
         );
     }
 
@@ -70,14 +88,6 @@ class TransferServiceTest extends TestCase
 
         $this->userRepository
             ->method('find')
-            ->willReturnMap([
-                [1, $payer],
-                [2, $payee],
-            ]);
-
-        // When executing the transfer the service will re-fetch rows with locks
-        $this->userRepository
-            ->method('findForUpdate')
             ->willReturnMap([
                 [1, $payer],
                 [2, $payee],

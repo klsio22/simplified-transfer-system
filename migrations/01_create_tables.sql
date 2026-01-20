@@ -2,14 +2,14 @@
 -- Simplified Transfer System - Database Schema
 -- ============================================
 
--- Cria banco de dados
+-- Create database
 CREATE DATABASE IF NOT EXISTS simplified_transfer
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 
 USE simplified_transfer;
 
--- Tabela de usuários
+-- Create table users
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fullName VARCHAR(255) NOT NULL,
@@ -20,12 +20,10 @@ CREATE TABLE IF NOT EXISTS users (
     balance DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_email (email),
-    INDEX idx_cpf (cpf),
     INDEX idx_type (type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Tabela de transferências (histórico)
+-- Create transfers table (transaction history)
 CREATE TABLE IF NOT EXISTS transfers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     payer_id INT NOT NULL,
@@ -43,25 +41,25 @@ CREATE TABLE IF NOT EXISTS transfers (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- Seeds de Teste
+-- Test Seeds
 -- ============================================
 
--- Usuários comuns (podem enviar e receber)
+-- Common users (can send and receive)
 INSERT INTO users (fullName, cpf, email, password, type, balance) VALUES
-('João Silva', '123.456.789-00', 'joao.silva@example.com', '$2y$10$YourHashedPasswordHere', 'common', 1000.00),
-('Maria Oliveira', '987.654.321-00', 'maria.oliveira@example.com', '$2y$10$YourHashedPasswordHere', 'common', 500.00),
-('Pedro Santos', '111.222.333-44', 'pedro.santos@example.com', '$2y$10$YourHashedPasswordHere', 'common', 750.00);
+('João Silva', '12345678900', 'joao.silva@example.com', '$2y$10$YourHashedPasswordHere', 'common', 1000.00),
+('Maria Oliveira', '98765432100', 'maria.oliveira@example.com', '$2y$10$YourHashedPasswordHere', 'common', 500.00),
+('Pedro Santos', '11122233344', 'pedro.santos@example.com', '$2y$10$YourHashedPasswordHere', 'common', 750.00);
 
--- Lojistas (só podem receber)
+-- Shopkeepers (can only receive)
 INSERT INTO users (fullName, cpf, email, password, type, balance) VALUES
-('Loja ABC Ltda', '12.345.678/0001-90', 'contato@lojaabc.com', '$2y$10$YourHashedPasswordHere', 'shopkeeper', 0.00),
-('Comércio XYZ ME', '98.765.432/0001-10', 'vendas@comercioxyz.com', '$2y$10$YourHashedPasswordHere', 'shopkeeper', 150.00);
+('Loja ABC Ltda', '12345678000190', 'contato@lojaabc.com', '$2y$10$YourHashedPasswordHere', 'shopkeeper', 0.00),
+('Comércio XYZ ME', '98765432000110', 'vendas@comercioxyz.com', '$2y$10$YourHashedPasswordHere', 'shopkeeper', 150.00);
 
 -- ============================================
--- Verificação
+-- Verification
 -- ============================================
 
-SELECT 'Banco de dados criado com sucesso!' as message;
+SELECT 'Database created successfully!' as message;
 SELECT COUNT(*) as total_users FROM users;
 SELECT type, COUNT(*) as count, SUM(balance) as total_balance 
 FROM users 

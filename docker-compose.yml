@@ -1,5 +1,4 @@
 services:
-  # Aplicação PHP
   app:
     build:
       context: .
@@ -10,20 +9,21 @@ services:
     volumes:
       - ./:/var/www/html
     environment:
-      - APP_ENV=development
-      - DB_HOST=mysql
-      - DB_NAME=simplified_transfer
-      - DB_USER=transfer_user
-      - DB_PASS=transfer_pass
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - APP_ENV=${APP_ENV}
+      - APP_DEBUG=${APP_DEBUG}
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - EXTERNAL_SERVICE_TIMEOUT=${EXTERNAL_SERVICE_TIMEOUT}
     networks:
       - transfer-network
     depends_on:
       - mysql
       - redis
 
-  # Nginx
   nginx:
     image: nginx:alpine
     container_name: transfer-nginx
@@ -38,7 +38,6 @@ services:
     depends_on:
       - app
 
-  # MySQL
   mysql:
     image: mysql:8.0
     container_name: transfer-mysql
@@ -46,23 +45,22 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: simplified_transfer
-      MYSQL_USER: transfer_user
-      MYSQL_PASSWORD: transfer_pass
-      MYSQL_ROOT_PASSWORD: root_password
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASS}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root_password}
     volumes:
       - mysql-data:/var/lib/mysql
       - ./migrations:/docker-entrypoint-initdb.d
     networks:
       - transfer-network
 
-  # Redis
   redis:
     image: redis:alpine
     container_name: transfer-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     networks:
       - transfer-network
 

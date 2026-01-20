@@ -19,6 +19,7 @@ class TransferService
         private UserRepository $userRepo,
         private AuthorizeService $authorizeService,
         private NotifyService $notifyService,
+        private RedisLockService $redisLockService,
         private ?LoggerInterface $logger = null
     ) {
     }
@@ -157,9 +158,26 @@ class TransferService
     }
 
     /**
-     * Execute transfer within atomic database transaction
+     * Execute transfer within Redis distributed lock + atomic database transaction
+     *
+     * Uses Redis locks for cross-server concurrency control, then DB transaction
+     * for ACID guarantees. Deterministic ordering prevents deadlocks.
      */
     private function executeTransfer(User $payer, User $payee, float $value): void
+    {
+        $locks = $this->redisLockService->acquireLocks($payer->id, $payee->id);
+
+        try {
+            $this->executeTransferWithDbTransaction($payer, $payee, $value);
+        } finally {
+            $this->redisLockService->releaseLocks($locks);
+        }
+    }
+
+    /**
+     * Execute transfer within atomic database transaction
+     */
+    private function executeTransferWithDbTransaction(User $payer, User $payee, float $value): void
     {
         $pdo = $this->userRepo->getPdo();
 
@@ -169,33 +187,23 @@ class TransferService
         try {
             $pdo->beginTransaction();
 
-            $firstId = $payer->id < $payee->id ? $payer->id : $payee->id;
-            $secondId = $payer->id < $payee->id ? $payee->id : $payer->id;
 
-            $firstLocked = $this->userRepo->findForUpdate($firstId);
-            $secondLocked = $this->userRepo->findForUpdate($secondId);
+            $freshPayer = $this->userRepo->find($payer->id);
+            $freshPayee = $this->userRepo->find($payee->id);
 
-            if (! $firstLocked || ! $secondLocked) {
+            if (! $freshPayer || ! $freshPayee) {
                 throw new TransferProcessingException('User not found during transfer');
             }
 
-            if ($firstLocked->id === $payer->id) {
-                $lockedPayer = $firstLocked;
-                $lockedPayee = $secondLocked;
-            } else {
-                $lockedPayer = $secondLocked;
-                $lockedPayee = $firstLocked;
-            }
-
-            if (! $lockedPayer->hasSufficientBalance($value)) {
+            if (! $freshPayer->hasSufficientBalance($value)) {
                 throw new BusinessRuleException('Insufficient balance');
             }
 
-            $lockedPayer->balance -= $value;
-            $this->userRepo->updateBalance($lockedPayer);
+            $freshPayer->balance -= $value;
+            $this->userRepo->updateBalance($freshPayer);
 
-            $lockedPayee->balance += $value;
-            $this->userRepo->updateBalance($lockedPayee);
+            $freshPayee->balance += $value;
+            $this->userRepo->updateBalance($freshPayee);
 
             $pdo->commit();
         } catch (\Throwable $e) {

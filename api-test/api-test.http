@@ -7,7 +7,7 @@ GET {{baseUrl}}/
 ###
 
 ### Balance - Get saldo usuário 1
-GET {{baseUrl}}/balance/25
+GET {{baseUrl}}/balance/2
 
 ###
 
@@ -31,8 +31,8 @@ Content-Type: {{contentType}}
 
 {
   "value": 10.00,
-  "payer": 25,
-  "payee": 24
+  "payer": 1,
+  "payee": 4
 }
 
 ###
